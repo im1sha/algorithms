@@ -23,6 +23,7 @@ namespace Kmeans
         public MainWindow()
         {
             InitializeComponent();
+
         }
     }
 }
