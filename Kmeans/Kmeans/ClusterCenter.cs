@@ -40,5 +40,31 @@ namespace Kmeans
         {
             return value > NotSpecifiedCluster;
         }
+
+        public static bool operator ==(ClusterCenter center, ClusterCenter anotherCenter)
+        {
+            if (center.Index == anotherCenter.Index &&
+                center.X == anotherCenter.X &&
+                center.Y == anotherCenter.Y)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator !=(ClusterCenter center, ClusterCenter anotherCenter)
+        {
+            return !(center == anotherCenter);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

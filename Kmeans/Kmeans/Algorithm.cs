@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kmeans
@@ -140,8 +141,8 @@ namespace Kmeans
         public bool Reclusterize()
         {            
             CalculateClusters();
-            CalculateClustersCenters();
-            return IsClusterizationRight();
+            List<ClusterCenter> controlValues = CalculateClustersCenters();
+            return IsClusterizationRight(controlValues);
         }
 
         private void InitializePointsPositions()
@@ -214,13 +215,16 @@ namespace Kmeans
             return result;
         }
 
-        private bool IsCenterCorrect()
+        private bool IsClusterizationRight(List<ClusterCenter> correctedCenters)
         {
-            return true;
-        }
-
-        private bool IsClusterizationRight()
-        {          
+            for (int i = 0; i < clustersCenters.Count; i++)
+            {
+                if (clustersCenters[i] != correctedCenters[i])
+                {
+                    return false;
+                }
+            }
+           
             return true;
         }
     }
