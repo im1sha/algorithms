@@ -44,9 +44,9 @@ namespace Kmeans
             }
         }
 
-        public int GetSquareOfDistance(IPoint anotherPoint)
+        public int GetDistanceTo(IPoint anotherPoint)
         {
-            return (int)(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0));
+            return (int) Math.Pow(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0), 0.5);
         }
 
         private bool IsClusterValid(int value)
