@@ -81,16 +81,16 @@ namespace Kmeans
         /// </summary>
         public int IterationsDone { get; private set; } = 0;
 
-        private Point[] positionsOfPoints;
-        public Point[] PositionsOfPoints
+        private IPoint[] positionsOfPoints;
+        public IPoint[] PositionsOfPoints
         {
-            get { return (Point[]) positionsOfPoints?.Clone(); }
+            get { return (IPoint[])positionsOfPoints?.Clone(); }
         }
 
-        private Point[] clustersCenters;
-        public Point[] ClustersCenters
+        private IPoint[] clustersCenters;
+        public IPoint[] ClustersCenters
         {
-            get { return (Point[]) clustersCenters?.Clone(); }
+            get { return (IPoint[])clustersCenters?.Clone(); }
         }
 
         /// <summary>
@@ -99,10 +99,10 @@ namespace Kmeans
         /// <param name="target">Value to check</param>
         /// <param name="lowerBound">Minimum value</param>
         /// <param name="upperBound">Maximum value</param>
-        /// <returns>true if target value in passed bounds, false otherwise</returns>
+        /// <returns>true if target value is in passed bounds, false otherwise</returns>
         private bool InBounds(int target, int lowerBound, int upperBound)
         {
-            return (target >= lowerBound) && (target <= upperBound);
+            return (target >= lowerBound) && (target < upperBound);
         }
 
         public Algorithm(int totalPoints, int totalClusters, int maxValue)
@@ -117,9 +117,6 @@ namespace Kmeans
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public void SetInitialClustarization()
         {
             InitializePointsPositions();
@@ -127,40 +124,96 @@ namespace Kmeans
         }
 
         public bool Reclusterize()
-        {
-            return true;
+        {            
+            CalculateClusters();
+            CalculateClustersCenters();
+            return IsClusterizationRight();
         }
 
         private void InitializePointsPositions()
         {
-            InitializePoints(ref positionsOfPoints, TotalPoints, MaxValue);
+            InitializePoints(ref positionsOfPoints, TotalPoints, 
+                MaxValue, typeof(StaticPoint));
         }
 
         private void InitializeClustersCenters()
         {
-            InitializePoints(ref clustersCenters, TotalClusters, MaxValue);
+            InitializePoints(ref clustersCenters, TotalClusters, 
+                MaxValue, typeof(ClusterCenter));
         }
 
-        private void InitializePoints(ref Point[] points, int totalPoints, int upperValue)
+        private void InitializePoints(ref IPoint[] points, int totalPoints, 
+            int upperValue, Type iPointType)
         {
             Random random = new Random();
-            points = new Point[totalPoints];
 
-            for (int i = 0; i < totalPoints; i++)
+            if (iPointType == typeof(ClusterCenter))
             {
-                points[i] = new Point(random.Next() % upperValue,
-                    random.Next() % upperValue);
+                points = new ClusterCenter[totalPoints];
+                for (int i = 0; i < totalPoints; i++)
+                {
+                    points[i] = new ClusterCenter(random.Next() % upperValue,
+                        random.Next() % upperValue, i);
+                }
             }
+            else if (iPointType == typeof(StaticPoint))
+            {
+                points = new StaticPoint[totalPoints];
+                for (int i = 0; i < totalPoints; i++)
+                {
+                    points[i] = new StaticPoint(random.Next() % upperValue,
+                        random.Next() % upperValue, StaticPoint.NotSpecifiedCluster);
+                }
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown type {iPointType}");
+            }          
         }
 
         private void CalculateClusters()
         {
+            StaticPoint[] points = (StaticPoint[])PositionsOfPoints;
+            ClusterCenter[] centers = (ClusterCenter[])ClustersCenters;
+            if (points == null)
+            {
+                throw new NullReferenceException("PositionsOfPoints is null");
+            }
+            if (centers == null)
+            {
+                throw new NullReferenceException("ClustersCenters is null");
+            }
 
+            for (int i = 0; i < points.Length; i++)
+            {
+                int currentMinimalDistance = int.MaxValue;           
+                int distanceToCenter;
+
+                foreach (var c in centers)
+                {
+                    distanceToCenter = points[i].GetSquareOfDistance(c);
+                    if (distanceToCenter < currentMinimalDistance)
+                    {
+                        currentMinimalDistance = distanceToCenter;
+                        points[i].Cluster = c.Index;
+                    }
+                }               
+            }
         }
 
         private void CalculateClustersCenters()
         {
 
+        }
+
+        private bool IsCenterCorrect()
+        {
+            return true;
+        }
+
+        private bool IsClusterizationRight()
+        {          
+            return true;
         }
     }
 }
