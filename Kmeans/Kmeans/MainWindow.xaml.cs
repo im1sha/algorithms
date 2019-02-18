@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Drawing;
+using System.ComponentModel;
 
 namespace Kmeans
 {
@@ -21,9 +22,12 @@ namespace Kmeans
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public MainWindow()
         {
             InitializeComponent();
+
+            inputGrid.DataContext = new InitialData();
         }
     }
 }

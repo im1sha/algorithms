@@ -55,7 +55,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="InitialData.cs" />
     <Compile Include="IPoint.cs" />
+    <Compile Include="RelayCommand.cs" />
     <Compile Include="StaticPoint.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

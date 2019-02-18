@@ -87,25 +87,9 @@ namespace Kmeans
         /// </summary>
         public int IterationsDone { get; private set; } = 0;
 
-        private List<StaticPoint> positionsOfPoints;
-        public List<StaticPoint> PositionsOfPoints
-        {
-            get
-            {
-                return positionsOfPoints?.ConvertAll(item => 
-                    new StaticPoint(item.X, item.Y, item.Cluster));
-            }
-        }
+        public List<StaticPoint> PositionsOfPoints { get; private set; } // return positionsOfPoints?.ConvertAll(item => new StaticPoint(item.X, item.Y, item.Cluster));
 
-        private List<ClusterCenter> clustersCenters;
-        public List<ClusterCenter> ClustersCenters
-        {
-            get
-            {
-                return clustersCenters?.ConvertAll(item => 
-                    new ClusterCenter(item.X, item.Y, item.Index));
-            }
-        }
+        public List<ClusterCenter> ClustersCenters { get; private set; }
 
         /// <summary>
         /// Detects whether passed number is possible
@@ -139,7 +123,12 @@ namespace Kmeans
         }
 
         public bool Reclusterize()
-        {            
+        {
+            if (!IsInitialized)
+            {
+                throw new ApplicationException("algorithm data is not initialized");
+            }
+
             CalculateClusters();
             List<ClusterCenter> controlValues = CalculateClustersCenters();
             return IsClusterizationRight(controlValues);
@@ -148,11 +137,11 @@ namespace Kmeans
         private void InitializePointsPositions()
         {
             Random random = new Random();
-            positionsOfPoints = new List<StaticPoint>();
+            PositionsOfPoints = new List<StaticPoint>();
 
             for (int i = 0; i < TotalPoints; i++)
             {
-                positionsOfPoints.Add(new StaticPoint(random.Next() % MaxValue,
+                PositionsOfPoints.Add(new StaticPoint(random.Next() % MaxValue,
                     random.Next() % MaxValue, StaticPoint.NotSpecifiedCluster));
             }
         }
@@ -160,35 +149,29 @@ namespace Kmeans
         private void InitializeClustersCenters()
         {
             Random random = new Random();
-            clustersCenters = new List<ClusterCenter>();
+            ClustersCenters = new List<ClusterCenter>();
 
             for (int i = 0; i < TotalClusters; i++)
             {
-                clustersCenters.Add(new ClusterCenter(random.Next() % MaxValue,
+                ClustersCenters.Add(new ClusterCenter(random.Next() % MaxValue,
                     random.Next() % MaxValue, i));
             }
         }
 
-
         private void CalculateClusters()
         {
-            if (!IsInitialized)
-            {
-                throw new ApplicationException("algorithm data is not initialized");
-            }
-
-            for (int i = 0; i < positionsOfPoints.Count; i++)
+            for (int i = 0; i < PositionsOfPoints.Count; i++)
             {
                 int currentMinimalDistance = int.MaxValue;           
                 int distanceToCenter;
 
-                foreach (var c in clustersCenters)
+                foreach (var c in ClustersCenters)
                 {
-                    distanceToCenter = positionsOfPoints[i].GetDistanceTo(c);
+                    distanceToCenter = PositionsOfPoints[i].GetDistanceTo(c);
                     if (distanceToCenter < currentMinimalDistance)
                     {
                         currentMinimalDistance = distanceToCenter;
-                        positionsOfPoints[i].Cluster = c.Index;
+                        PositionsOfPoints[i].Cluster = c.Index;
                     }
                 }               
             }
@@ -196,16 +179,12 @@ namespace Kmeans
 
         private List<ClusterCenter> CalculateClustersCenters()
         {
-            if (!IsInitialized)
-            {
-                throw new ApplicationException("algorithm data is not initialized");
-            }
-
             List<ClusterCenter> result = new List<ClusterCenter>();
 
             for (int i = 0; i < TotalClusters; i++)
             {               
-                List<StaticPoint> points = positionsOfPoints.Where(item => item.Cluster == i).ToList();
+                List<StaticPoint> points = PositionsOfPoints.Where(item => item.Cluster == i).ToList();
+
                 result.Add(new ClusterCenter(
                     points.Sum(item => item.X) / points.Count,
                     points.Sum(item => item.Y) / points.Count,
@@ -217,9 +196,9 @@ namespace Kmeans
 
         private bool IsClusterizationRight(List<ClusterCenter> correctedCenters)
         {
-            for (int i = 0; i < clustersCenters.Count; i++)
+            for (int i = 0; i < ClustersCenters.Count; i++)
             {
-                if (clustersCenters[i] != correctedCenters[i])
+                if (ClustersCenters[i] != correctedCenters[i])
                 {
                     return false;
                 }
