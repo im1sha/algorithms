@@ -52,15 +52,17 @@ namespace Kmeans
                         }
                         break;
                 }
+
+                if (error != string.Empty)
+                {
+                    Error = error;
+                }
+
                 return error;
             }
         }
 
-        public string Error
-        {
-            get { throw new NotImplementedException(); }
-        }
-
+        public string Error { get; private set; } = string.Empty;
 
         /// <summary>
         /// Detects whether passed number is possible

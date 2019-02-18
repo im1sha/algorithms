@@ -9,116 +9,57 @@ namespace Kmeans
 {
     class Algorithm
     {
-        private bool IsInitialized = false;
-
-        private object Sync = new object();
-
-        private readonly int MinPoints = 1_000;
-        private readonly int MaxPoints = 100_000;
-
-        private int totalPoints; 
         /// <summary>
-        /// Amount of points used in the test
+        /// Number of points used in the test
         /// </summary>
-        public int TotalPoints
-        {
-            get { return totalPoints; }
-            private set
-            {
-                if (InBounds(value, MinPoints, MaxPoints))
-                {
-                    totalPoints = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("totalPoints");
-                }
-            }
-        }
+        public readonly int TotalPoints;
 
-        private readonly int MinClusters = 2;
-        private readonly int MaxClusters = 20;
-
-        private int totalClusters;
         /// <summary>
         /// Total amount of clusters to divide points into  
         /// </summary>
-        public int TotalClusters
-        {
-            get { return totalClusters; }
-            private set
-            {
-                if (InBounds(value, MinClusters, MaxClusters))
-                {
-                    totalClusters = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("totalClusters");
-                }
-            }
-        }
+        public readonly int TotalClusters;
 
-        private readonly int LowerBoundOfMaxValue = 100;
-        private readonly int UpperBoundOfMaxValue = 10_000;
-      
-        private int maxValue; 
         /// <summary>
-        /// Upper limit of coordinate value
+        /// Field size
         /// </summary>
-        public int MaxValue
-        {
-            get { return maxValue; }
-            private set
-            {
-                if (InBounds(value, LowerBoundOfMaxValue, UpperBoundOfMaxValue))
-                {
-                    maxValue = value;
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException("maxValue");
-                }
-            }
-        }
+        public readonly int MaxCoordinate = 1_000;
+
+
+        public bool IsInitialized { get; private set; } = false;
 
         /// <summary>
         /// Total iterations done to divide points into clusters 
         /// </summary>
         public int IterationsDone { get; private set; } = 0;
 
-        public List<StaticPoint> PositionsOfPoints { get; private set; } // return positionsOfPoints?.ConvertAll(item => new StaticPoint(item.X, item.Y, item.Cluster));
+        public Dictionary<int, (ClusterCenter center, List<StaticPoint> staticPoints) > PointsDictionary { get; private set; }
 
-        public List<ClusterCenter> ClustersCenters { get; private set; }
 
-        /// <summary>
-        /// Detects whether passed number is possible
-        /// </summary>
-        /// <param name="target">Value to check</param>
-        /// <param name="lowerBound">Minimum value</param>
-        /// <param name="upperBound">Maximum value</param>
-        /// <returns>true if target value is in passed bounds, false otherwise</returns>
-        private bool InBounds(int target, int lowerBound, int upperBound)
-        {
-            return (target >= lowerBound) && (target < upperBound);
-        }
-
-        public Algorithm(int totalPoints, int totalClusters, int maxValue)
-            : this()
+        public Algorithm(int totalPoints, int totalClusters)
         {
             TotalPoints = totalPoints;
             TotalClusters = totalClusters;
-            MaxValue = maxValue;
         }
 
-        private Algorithm()
-        {
-        }
 
         public void SetInitialClustarization()
         {
-            InitializePointsPositions();
-            InitializeClustersCenters();
+            Random random = new Random();
+
+            // initialize centers
+            for (int i = 0; i < TotalClusters; i++)
+            {           
+                PointsDictionary.Add(i, (new ClusterCenter(random.Next() % MaxCoordinate, 
+                    random.Next() % MaxCoordinate, i), new List<StaticPoint>()));
+            }
+
+            // generate other points
+            for (int i = TotalClusters; i < TotalPoints; i++)
+            {
+                PointsDictionary[0].staticPoints.Add(new StaticPoint(random.Next() % MaxCoordinate,
+                    random.Next() % MaxCoordinate, 0));
+            }
+
             IsInitialized = true;
         }
 
@@ -132,30 +73,6 @@ namespace Kmeans
             CalculateClusters();
             List<ClusterCenter> controlValues = CalculateClustersCenters();
             return IsClusterizationRight(controlValues);
-        }
-
-        private void InitializePointsPositions()
-        {
-            Random random = new Random();
-            PositionsOfPoints = new List<StaticPoint>();
-
-            for (int i = 0; i < TotalPoints; i++)
-            {
-                PositionsOfPoints.Add(new StaticPoint(random.Next() % MaxValue,
-                    random.Next() % MaxValue, StaticPoint.NotSpecifiedCluster));
-            }
-        }
-
-        private void InitializeClustersCenters()
-        {
-            Random random = new Random();
-            ClustersCenters = new List<ClusterCenter>();
-
-            for (int i = 0; i < TotalClusters; i++)
-            {
-                ClustersCenters.Add(new ClusterCenter(random.Next() % MaxValue,
-                    random.Next() % MaxValue, i));
-            }
         }
 
         private void CalculateClusters()
