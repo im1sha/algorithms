@@ -41,7 +41,7 @@
         </Style>
 
     </Window.Resources>
-    <Grid>
+    <Grid x:Name="mainGrid">
         <Grid.ColumnDefinitions>      
             <ColumnDefinition Width="2*" />
 
