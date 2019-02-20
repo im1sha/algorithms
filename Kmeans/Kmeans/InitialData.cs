@@ -61,7 +61,7 @@ namespace Kmeans
         /// <summary>
         /// Points number used in the test
         /// </summary>
-        public int TotalPoints { get; set; } = MinPoints;
+        public int TotalPoints { get; set; } = MaxPoints - 1;
 
         private static readonly int MinClusters = 2;
         private static readonly int MaxClusters = 20;
@@ -69,7 +69,7 @@ namespace Kmeans
         /// <summary>
         /// Amount of clusters to divide points into  
         /// </summary>
-        public int TotalClusters { get; set; } = MinClusters;
+        public int TotalClusters { get; set; } = MaxClusters - 1;
 
         public string this[string fieldName]
         {

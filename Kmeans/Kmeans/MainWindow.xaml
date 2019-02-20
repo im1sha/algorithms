@@ -47,12 +47,8 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <!--<Grid x:Name="picGrid"  Grid.Column="0">
-            <Image x:Name="picture" Stretch="Fill" Margin="10 10 0 10" Source="{Binding Path=Image}"></Image>
-        </Grid>-->
-
-        <Grid Grid.Column="0">
-            <TextBlock Margin="10 10 0 10" Text="{Binding TextIt, Mode=TwoWay}">zzz</TextBlock>
+        <Grid Grid.Column="0" DataContext="{Binding Model}">
+            <Image Stretch="Fill" Margin="10 10 0 10" Source="{Binding Image, UpdateSourceTrigger=PropertyChanged}"></Image>
         </Grid>
 
         <Grid x:Name="input" Grid.Column="1">

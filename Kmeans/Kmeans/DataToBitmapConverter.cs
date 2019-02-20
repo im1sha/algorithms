@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,6 +41,7 @@ namespace Kmeans
             }
             var bmpSource = new WriteableBitmap(sizeX, sizeY, dpiX, dpiY, PixelFormats.Pbgra32, null);
             bmpSource.WritePixels(new Int32Rect(0, 0, sizeX, sizeY), pixels, bmpSource.BackBufferStride, 0);
+
             return bmpSource;
         }
 

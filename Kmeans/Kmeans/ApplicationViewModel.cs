@@ -10,17 +10,23 @@ using System.Windows.Media.Imaging;
 
 namespace Kmeans
 {
-    public class ApplicationViewModel /*: INotifyPropertyChanged*/
+    public class ApplicationViewModel : INotifyPropertyChanged
     {
         public InitialData InitialData { get; set; } = new InitialData();
 
         private ApplicationModel model;
-
-        //public ApplicationModel Model
-        //{
-        //    get { return model; }
-        //    set { model = value; OnPropertyChanged("Model"); }
-        //}
+        public ApplicationModel Model
+        {
+            get
+            {
+                return model;
+            }
+            set
+            {
+                model = value;
+                OnPropertyChanged("Model");
+            }
+        }
 
         // command of execution starting  
         private InteractCommand executeCommand;
@@ -31,19 +37,19 @@ namespace Kmeans
                 return executeCommand ??
                     (executeCommand = new InteractCommand(obj =>
                     {
-                        model = new ApplicationModel(InitialData.TotalClusters, 
+                        Model = new ApplicationModel(InitialData.TotalClusters, 
                             InitialData.TotalPoints, InitialData.DefaultImageSizeInPixels, 
                             InitialData.Colors);
-                        model.StartExecution();
+                        Model.StartExecution();
                     }));
             }
         }
 
-        //public event PropertyChangedEventHandler PropertyChanged;
-        //public void OnPropertyChanged([CallerMemberName]string property = "")
-        //{
-        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        //}
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName]string property = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
     }
 }
 

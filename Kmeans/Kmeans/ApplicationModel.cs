@@ -24,17 +24,6 @@ namespace Kmeans
             }
         }
 
-        private string textit;
-        public string TextIt
-        {
-            get { return textit; }
-            set
-            {
-                textit = value;
-                OnPropertyChanged("TextIt");
-            }
-        }
-
         private Algorithm executionLogic;
 
         private readonly uint[] colors;
@@ -47,23 +36,21 @@ namespace Kmeans
 
         public void StartExecution()
         {
-            //executionLogic.SetInitialClustarization();
+            executionLogic.SetInitialClustarization();
 
-            //(StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
+            (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
 
-            //do
-            //{
-            //    currentClusterizaiton = executionLogic.Reclusterize();
+            do
+            {
+                currentClusterizaiton = executionLogic.Reclusterize();
 
-            //    if (currentClusterizaiton != null)
-            //    {
-            //        Image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
-            //            executionLogic.MaxCoordinate, executionLogic.MaxCoordinate,
-            //            colors);
-            //    }
-            //} while (!executionLogic.IsFinalState);
-
-            TextIt = "v000000000000000000000000000000";
+                if (currentClusterizaiton != null)
+                {
+                    Image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
+                        executionLogic.MaxCoordinate, executionLogic.MaxCoordinate,
+                        colors);
+                }
+            } while (!executionLogic.IsFinalState);
         }
 
         private BitmapSource random()
