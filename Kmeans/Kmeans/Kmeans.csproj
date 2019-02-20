@@ -64,9 +64,8 @@
     <Compile Include="ApplicationViewModel.cs" />
     <Compile Include="DataToBitmapConverter.cs" />
     <Compile Include="InitialData.cs" />
-    <Compile Include="IPoint.cs" />
     <Compile Include="ApplicationModel.cs" />
-    <Compile Include="CustomCommand.cs" />
+    <Compile Include="InteractCommand.cs" />
     <Compile Include="StaticPoint.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

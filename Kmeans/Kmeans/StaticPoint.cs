@@ -6,42 +6,40 @@ using System.Threading.Tasks;
 
 namespace Kmeans
 {
-    class StaticPoint : IPoint
+    struct StaticPoint
     {
-        public const int NotSpecifiedCluster = -1;
+        public readonly int X;
+        public readonly int Y;
 
-        public int X { get; }
-        public int Y { get; }
-        public int ClusterIndex { get; }
-
-        public StaticPoint(int x, int y, int cluster) 
+        public StaticPoint(int x, int y) 
         {
             X = x;
             Y = y;
-            if (!IsClusterValid(cluster))
-            {
-                throw new ArgumentException("Argument cluster is invalid.");
-            }
-            ClusterIndex = cluster;
         }
      
-        private bool IsClusterValid(int value)
+        public int GetSquareOfDistanceTo(StaticPoint anotherPoint)
         {
-            return value >= NotSpecifiedCluster;
+            return (int)(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0));
         }
 
-        public int GetDistanceTo(IPoint anotherPoint)
+        public static bool operator ==(StaticPoint point1, StaticPoint point2)
         {
-            return (int)Math.Pow(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0), 0.5);
+            return (point1.X == point2.X) && (point1.Y == point2.Y);
         }
 
-        public static StaticPoint Copy(StaticPoint source)
+        public static bool operator !=(StaticPoint point1, StaticPoint point2)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException();
-            }
-            return new StaticPoint(source.X, source.Y, source.ClusterIndex);
+            return !(point1 == point2);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
         }
     }
 }

@@ -25,24 +25,21 @@ namespace Kmeans
         public readonly int MaxCoordinate;
 
         public bool IsInitialized { get; private set; }
-       
-        /// <summary>
-        /// Total iterations done to divide points into clusters 
-        /// </summary>
-        public int IterationsDone { get; private set; } = 0;
 
-        public (StaticPoint Center, List<StaticPoint> StaticPoints)[] Clusters { get; private set; }
+        private (StaticPoint Center, List<StaticPoint> StaticPoints)[] CurrentClusters;
         private (StaticPoint Center, List<StaticPoint> StaticPoints)[] NewIterationClusters;
 
 
-        public Algorithm(int totalPoints, int totalClusters, int maxCoordinate)
+        public Algorithm(int totalClusters, int totalPoints, int maxCoordinate)
         {
             TotalPoints = totalPoints;
             TotalClusters = totalClusters;
             MaxCoordinate = maxCoordinate;
         }
 
-
+        /// <summary>
+        /// Initilizes data required by algorithm
+        /// </summary>
         public void SetInitialClustarization()
         {
             Random random = new Random();
@@ -50,44 +47,59 @@ namespace Kmeans
             // initialize centers
             for (int i = 0; i < TotalClusters; i++)
             {           
-                Clusters[i] = (new StaticPoint(random.Next() % MaxCoordinate, 
-                    random.Next() % MaxCoordinate, i), new List<StaticPoint>());
+                CurrentClusters[i] = (new StaticPoint(random.Next() % MaxCoordinate, 
+                    random.Next() % MaxCoordinate), new List<StaticPoint>());
             }
 
             // generate other points
             for (int i = TotalClusters; i < TotalPoints; i++)
             {
-                Clusters[0].StaticPoints.Add(new StaticPoint(random.Next() % MaxCoordinate,
-                    random.Next() % MaxCoordinate, 0));
+                CurrentClusters[0].StaticPoints.Add(new StaticPoint(random.Next() % MaxCoordinate,
+                    random.Next() % MaxCoordinate));
             }
 
             IsInitialized = true;            
         }
 
         /// <summary>
-        /// 
+        /// Reclusterizes points if they are not in final clustarization state
         /// </summary>
         /// <returns>Array of clusters or null if clusters have no changes</returns>
         public (StaticPoint Сenter, List<StaticPoint> StaticPoints)[] Reclusterize()
         {
             if (!IsInitialized)
             {
-                throw new ApplicationException("Algorithm data is not initialized");
+                throw new ApplicationException("Algorithm data is not initialized.");
             }
 
-            NewIterationClusters = CalculateClusters(Clusters);
-            StaticPoint[] controlValues = RecalculateClustersCenters(NewIterationClusters);
+            // correct clusters's positions 
+            NewIterationClusters = CalculateClusters(CurrentClusters);
+            StaticPoint[] controlValues = RecalculateCenters(NewIterationClusters);
 
-            if (!IsClusterizationRight(controlValues))
+            if (!IsClusterizationRight(controlValues, CentersToList(CurrentClusters).ToArray()))
             {
-                Clusters = NewIterationClusters;
-                return Clusters;
+                CurrentClusters = NewIterationClusters;
+                NewIterationClusters = null;
+                return GetClustersCopy(CurrentClusters);
             }
 
             return null;
         }
 
-        private (StaticPoint Center, List<StaticPoint> StaticPoints)[] GetCentersAndEmptyClusters(
+        private (StaticPoint Center, List<StaticPoint> StaticPoints)[] GetClustersCopy(
+            (StaticPoint Center, List<StaticPoint> StaticPoints)[] source)
+        {
+            (StaticPoint Center, List<StaticPoint> StaticPoints)[] result = new
+                (StaticPoint Center, List<StaticPoint> StaticPoints)[source.Length];
+
+            for (int i = 0; i < source.Length; i++)
+            {
+                result[i] = (source[i].Center, new List<StaticPoint>(source[i].StaticPoints));
+            }
+            return result;
+        }
+
+        private (StaticPoint Center, List<StaticPoint> StaticPoints)[] GetCentersAndEmptyClustersCopy(
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] source)
         {
             int length = source.Length;
@@ -97,17 +109,21 @@ namespace Kmeans
 
             for (int i = 0; i < length; i++)
             {
-                result[i] = (StaticPoint.Copy(source[i].Center), new List<StaticPoint>());
+                result[i] = (source[i].Center, new List<StaticPoint>());
             }
 
             return result;
         }
 
-        private List<StaticPoint> GetCentersCopy((StaticPoint Center, List<StaticPoint> StaticPoints)[] source)
+        private List<StaticPoint> CentersToList((StaticPoint Center, List<StaticPoint> StaticPoints)[] source)
         {
-            return source.Select(item => source.ElementAt(item.Center.ClusterIndex).Center).ToList();
+            var result = new List<StaticPoint>();
+            foreach (var item in source)
+            {
+                result.Add(item.Center);
+            }
+            return result;
         }
-
 
         /// <summary>
         /// Recalculates clusters for given centers by placing StaticPoint's instances 
@@ -119,14 +135,15 @@ namespace Kmeans
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] clusters)
         {
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] result =
-                GetCentersAndEmptyClusters(clusters);
+                GetCentersAndEmptyClustersCopy(clusters);
+
+            List<StaticPoint> centersCopy = CentersToList(clusters);
 
             for (int i = 0; i < clusters.Length; i++)
             {
                 for (int j = 0; j < clusters[i].StaticPoints.Count; j++)
                 {
-                    int nearestCenterIndex = GetNearestPointIndex(clusters[i].StaticPoints[j], 
-                        GetCentersCopy(clusters));
+                    int nearestCenterIndex = GetNearestPointIndex(clusters[i].StaticPoints[j], centersCopy);
 
                     result[nearestCenterIndex].StaticPoints.Add(clusters[i].StaticPoints[j]);
                 }
@@ -135,15 +152,15 @@ namespace Kmeans
             return result;
         }
 
-        private int GetNearestPointIndex(StaticPoint point, List<StaticPoint> staticPoints)
+        private int GetNearestPointIndex(StaticPoint point, List<StaticPoint> pointsToCompare)
         {
             int currentMinimalDistance = int.MaxValue;
             int nearestPointIndex = 0;
             int distanceToTargetPoint;
 
-            for (int i = 0; i < staticPoints.Count; i++)
+            for (int i = 0; i < pointsToCompare.Count; i++)
             {
-                distanceToTargetPoint = point.GetDistanceTo(staticPoints[i]);
+                distanceToTargetPoint = point.GetSquareOfDistanceTo(pointsToCompare[i]);
                 if (distanceToTargetPoint < currentMinimalDistance)
                 {
                     currentMinimalDistance = distanceToTargetPoint;
@@ -154,7 +171,12 @@ namespace Kmeans
             return nearestPointIndex;
         }
 
-        private StaticPoint[] RecalculateClustersCenters(
+        /// <summary>
+        /// Calculates corrected values for clusters's centers
+        /// </summary>
+        /// <param name="cluster">Clusters to analyze</param>
+        /// <returns>Correct centers positions</returns>
+        private StaticPoint[] RecalculateCenters(
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] cluster)
         {
             var arithmeticCenters = new StaticPoint[TotalClusters];
@@ -166,33 +188,31 @@ namespace Kmeans
                 // move center to StaticPoints
                 cluster[i].StaticPoints.Add(new StaticPoint(
                     cluster[i].Center.X,
-                    cluster[i].Center.Y,
-                    cluster[i].Center.ClusterIndex));
+                    cluster[i].Center.Y));
 
                 // calculate new central points
                 arithmeticCenters[i] = new StaticPoint(
                     cluster[i].StaticPoints.Sum(item => item.X) / cluster[i].StaticPoints.Count,
-                    cluster[i].StaticPoints.Sum(item => item.Y) / cluster[i].StaticPoints.Count,
-                    i);
+                    cluster[i].StaticPoints.Sum(item => item.Y) / cluster[i].StaticPoints.Count);
 
-                // get nearest point index
+                // get nearest point by index
                 nearestPointIndex = GetNearestPointIndex(arithmeticCenters[i], cluster[i].StaticPoints);
-
-
-                nearestPoints[i] = StaticPoint.Copy(cluster[i].StaticPoints[nearestPointIndex]);
+                nearestPoints[i] = cluster[i].StaticPoints[nearestPointIndex];
 
                 // move new cluster's center from StaticPoints to Center
-                cluster[i].Center = StaticPoint.Copy(cluster[i].StaticPoints[nearestPointIndex]);
+                cluster[i].Center = cluster[i].StaticPoints[nearestPointIndex];
                 cluster[i].StaticPoints.RemoveAt(nearestPointIndex);
-
             }
 
             return nearestPoints;
         }
 
-        private bool IsClusterizationRight(StaticPoint[] correctedCenters)
+        private bool IsClusterizationRight(StaticPoint[] correctedCenters, StaticPoint[] oldCenters)
         {
-            List<StaticPoint> oldCenters = GetCentersCopy(Clusters);
+            if (correctedCenters.Length != oldCenters.Length)
+            {
+                throw new ApplicationException("Not equal length of parameters.");
+            }
 
             for (int i = 0; i < correctedCenters.Length; i++)
             {

@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Kmeans
 {
-    public class CustomCommand : ICommand
+    public class InteractCommand : ICommand
     {
         private Action<object> execute;
         private Func<object, bool> canExecute;
@@ -18,7 +18,7 @@ namespace Kmeans
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public CustomCommand(Action<object> execute,
+        public InteractCommand(Action<object> execute,
             Func<object, bool> canExecute = null)
         {
             this.execute = execute;

@@ -26,15 +26,8 @@ namespace Kmeans
         public MainWindow()
         {
             InitializeComponent();
-
-            
-
-            var applicationViewModel  = new ApplicationViewModel();
-
-            mainGrid.DataContext = applicationViewModel;
-            inputGrid.DataContext = applicationViewModel?.InitialData;
-            
-            //image.Source = random();
+          
+            mainGrid.DataContext = new ApplicationViewModel();
         }
 
 
@@ -54,12 +47,9 @@ namespace Kmeans
         //            // UI operations go inside of Invoke
         //            txt.Text += ".";
         //        });
-
         //        // Heavy operations go outside of Invoke
         //        System.Threading.Thread.Sleep(51);
         //    }
         //}
-
-
     }
 }

@@ -6,45 +6,34 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Kmeans
 {
-    public class ApplicationViewModel : INotifyPropertyChanged
+    public class ApplicationViewModel
     {
         public InitialData InitialData { get; set; } = new InitialData();
 
-        private bool isStarted = false;
-        public bool IsStarted
-        {
-            get { return isStarted; }
-            set
-            {
-                isStarted = value;
-                OnPropertyChanged("IsStarted");
-            }
-        }
-
         private ApplicationModel model;
-        public ApplicationModel Model
+
+        // command of execution starting  
+        private InteractCommand executeCommand;
+        public InteractCommand ExecuteCommand
         {
-            get { return model; }
-            set
+            get
             {
-                model = value;
-                OnPropertyChanged("Model");
+                return executeCommand ??
+                    (executeCommand = new InteractCommand(obj =>
+                    {
+                        model = new ApplicationModel(InitialData.TotalClusters, InitialData.TotalPoints,
+                            InitialData.DefaultImageSizeInPixels);
+                        model.StartExecution();
+                    }));
             }
         }
-
-        public ApplicationViewModel()
-        {
-            Model = new ApplicationModel();
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string property = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }
-
     }
 }
+
+
+
+

@@ -13,7 +13,7 @@ namespace Kmeans
         private const string TotalPointsPropertyAsString = "TotalPoints";
         private const string TotalClustersPropertyAsString = "TotalClusters";
 
-        // private bool IsInitialized = false;
+        public const int DefaultImageSizeInPixels = 1_000;
 
         private static readonly int MinPoints = 1_000;
         private static readonly int MaxPoints = 100_000;
@@ -77,3 +77,6 @@ namespace Kmeans
         }
     }
 }
+
+
+
