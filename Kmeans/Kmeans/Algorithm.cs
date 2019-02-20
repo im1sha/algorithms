@@ -26,6 +26,8 @@ namespace Kmeans
 
         public bool IsInitialized { get; private set; }
 
+        public bool IsFinalState { get; private set; }
+
         private (StaticPoint Center, List<StaticPoint> StaticPoints)[] CurrentClusters;
         private (StaticPoint Center, List<StaticPoint> StaticPoints)[] NewIterationClusters;
 
@@ -42,7 +44,15 @@ namespace Kmeans
         /// </summary>
         public void SetInitialClustarization()
         {
+            if (IsInitialized)
+            {
+                throw new ApplicationException("Initialized second time.");
+            }
+
             Random random = new Random();
+
+            CurrentClusters = new (StaticPoint Center, List<StaticPoint> StaticPoints)[TotalClusters];
+            NewIterationClusters = new (StaticPoint Center, List<StaticPoint> StaticPoints)[TotalClusters];
 
             // initialize centers
             for (int i = 0; i < TotalClusters; i++)
@@ -65,7 +75,7 @@ namespace Kmeans
         /// Reclusterizes points if they are not in final clustarization state
         /// </summary>
         /// <returns>Array of clusters or null if clusters have no changes</returns>
-        public (StaticPoint Сenter, List<StaticPoint> StaticPoints)[] Reclusterize()
+        public (StaticPoint Сenter, StaticPoint[] StaticPoints)[] Reclusterize()
         {
             if (!IsInitialized)
             {
@@ -74,27 +84,27 @@ namespace Kmeans
 
             // correct clusters's positions 
             NewIterationClusters = CalculateClusters(CurrentClusters);
-            StaticPoint[] controlValues = RecalculateCenters(NewIterationClusters);
+            StaticPoint[] controlValues = RecalculateCenters(ref NewIterationClusters);
 
             if (!IsClusterizationRight(controlValues, CentersToList(CurrentClusters).ToArray()))
             {
                 CurrentClusters = NewIterationClusters;
-                NewIterationClusters = null;
+                NewIterationClusters = new (StaticPoint Center, List<StaticPoint> StaticPoints)[TotalClusters];
                 return GetClustersCopy(CurrentClusters);
             }
-
+            IsFinalState = true;
             return null;
         }
 
-        private (StaticPoint Center, List<StaticPoint> StaticPoints)[] GetClustersCopy(
+        private (StaticPoint Center, StaticPoint[] StaticPoints)[] GetClustersCopy(
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] source)
         {
-            (StaticPoint Center, List<StaticPoint> StaticPoints)[] result = new
-                (StaticPoint Center, List<StaticPoint> StaticPoints)[source.Length];
+            (StaticPoint Center, StaticPoint[] StaticPoints)[] result = new
+                (StaticPoint Center, StaticPoint[] StaticPoints)[source.Length];
 
             for (int i = 0; i < source.Length; i++)
             {
-                result[i] = (source[i].Center, new List<StaticPoint>(source[i].StaticPoints));
+                result[i] = (source[i].Center, source[i].StaticPoints.ToArray());
             }
             return result;
         }
@@ -172,11 +182,11 @@ namespace Kmeans
         }
 
         /// <summary>
-        /// Calculates corrected values for clusters's centers
+        /// Corrects clusters's centers
         /// </summary>
         /// <param name="cluster">Clusters to analyze</param>
         /// <returns>Correct centers positions</returns>
-        private StaticPoint[] RecalculateCenters(
+        private StaticPoint[] RecalculateCenters(ref 
             (StaticPoint Center, List<StaticPoint> StaticPoints)[] cluster)
         {
             var arithmeticCenters = new StaticPoint[TotalClusters];

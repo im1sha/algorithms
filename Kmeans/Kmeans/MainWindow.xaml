@@ -35,7 +35,6 @@
             <Setter Property="Margin" Value="15 0 15 0" />
             <Setter Property="Background" Value="White" />
         </Style>
-        
         <Style TargetType="Label">
             <Setter Property="Margin" Value="15 0" />
         </Style>
@@ -48,11 +47,15 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" >
-            <Image x:Name="image" Stretch="Fill" Margin="10 10 0 10"></Image>
+        <!--<Grid x:Name="picGrid"  Grid.Column="0">
+            <Image x:Name="picture" Stretch="Fill" Margin="10 10 0 10" Source="{Binding Path=Image}"></Image>
+        </Grid>-->
+
+        <Grid Grid.Column="0">
+            <TextBlock Margin="10 10 0 10" Text="{Binding TextIt, Mode=TwoWay}">zzz</TextBlock>
         </Grid>
-        
-        <Grid x:Name="inputGrid" Grid.Column="1">
+
+        <Grid x:Name="input" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -64,12 +67,12 @@
             
             <Label Grid.Row="0" Content="Clusters"  />
             <Label Grid.Row="2" Content="Points"  />
-            <Button Grid.Row="4" Margin="15">Calculate</Button>
-            
+            <Button Grid.Row="4" Margin="15" Command="{Binding ExecuteCommand}">Calculate</Button>
+
             <TextBox Grid.Row="1" 
                      Validation.ErrorTemplate="{StaticResource validationFailed}">
                 <TextBox.Text>
-                    <Binding Path="TotalClusters" 
+                    <Binding Path="InitialData.TotalClusters" 
                              NotifyOnValidationError="True" >
                         <Binding.ValidationRules>
                             <DataErrorValidationRule />
@@ -77,11 +80,10 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-            
             <TextBox Grid.Row="3" 
                      Validation.ErrorTemplate="{StaticResource validationFailed}">
                 <TextBox.Text>
-                    <Binding Path="TotalPoints"
+                    <Binding Path="InitialData.TotalPoints"
                              NotifyOnValidationError="True">
                         <Binding.ValidationRules>
                             <DataErrorValidationRule />

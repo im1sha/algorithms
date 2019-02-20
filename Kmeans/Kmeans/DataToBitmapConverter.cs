@@ -11,48 +11,70 @@ namespace Kmeans
 {
     static class DataToBitmapConverter
     {
-        //uint[] color = new[] {
-        //        0xFFf44b42,
-        //        0xFFf47141,
-        //        0xFFf4ac41,
-        //        0xFFf4d641,
-        //        0xFFe2f441,
-        //        0xFF79f441,
-        //        0xFF41f4a9,
-        //        0xFF41f4f4,
-        //        0xFF419df4,
-        //        0xFF414cf4,
-        //        0xFF7c41f4,
-        //        0xFFa941f4,
-        //        0xFF431663,
-        //        0xFFf141f4,
-        //        0xFFfa00ff,
-        //        0xFFf4419a,
-        //        0xFFf4beb7,
-        //        0xFFdcf4b7,
-        //        0xFFb7e5f4,
-        //        0xFF747474,
-        //    };
+        public const uint whiteColor = 0xFFFFFFFF;
+
+        public static BitmapSource ClustersToBitmap((StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusters,
+            int sizeX, int sizeY, uint[] colors)
+        {
+            uint [] pixels = GenerateColorsArray(clusters, sizeX, sizeY, colors);
+
+            return ArrayToBitmap(pixels, sizeX, sizeY);
+        }
+
 
         /// <summary>
         /// Converts sequence of colors represented in format #AARRGGBB to bitmap
         /// </summary>
+        /// <param name="pixels">Array containing color for each the pixel</param>
         /// <param name="sizeX"></param>
         /// <param name="sizeY"></param>
-        /// <param name="pixels">Array containing color for each pixel</param>
         /// <param name="dpiX"></param>
         /// <param name="dpiY"></param>
         /// <returns>Image represented as BitmapSource</returns>
-        public static BitmapSource Convert(int sizeX, int sizeY, uint[] pixels, 
+        private static BitmapSource ArrayToBitmap(uint[] pixels, int sizeX, int sizeY, 
             int dpiX = 96,int dpiY = 96)
-        {        
+        {
+            if (sizeX * sizeY != pixels.Length)
+            {
+                throw new ArgumentException("Wrong number of pixels.");
+            }
             var bmpSource = new WriteableBitmap(sizeX, sizeY, dpiX, dpiY, PixelFormats.Pbgra32, null);
             bmpSource.WritePixels(new Int32Rect(0, 0, sizeX, sizeY), pixels, bmpSource.BackBufferStride, 0);
             return bmpSource;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="clusters"></param>      
+        /// <param name="sizeX"></param>
+        /// <param name="sizeY"></param>
+        /// <param name="colors">Colors in format #AARRGGBB</param>
+        /// <returns></returns>
+        private static uint[] GenerateColorsArray(
+            (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusters,
+            int sizeX, int sizeY, uint[] colors)
+        {
 
+            if (clusters.Length != colors.Length)
+            {
+                throw new ArgumentException("Arguments should have the same length.");
+            }
 
+            int totalPoints = sizeX * sizeY;
 
+            uint[] pixels = Enumerable.Repeat(whiteColor, totalPoints).ToArray();
+
+            for (int i = 0; i < clusters.Length; i++)
+            {
+                for (int j = 0; j < clusters[i].StaticPoints.Length; j++)
+                {
+                    pixels[clusters[i].StaticPoints[j].X +
+                        clusters[i].StaticPoints[j].Y * sizeX] = colors[i];
+                }
+            }
+
+            return pixels;
+        }
     }
 }
