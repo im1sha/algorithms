@@ -11,7 +11,7 @@ namespace Kmeans
     public class InitialData : IDataErrorInfo
     {
         private uint[] defaultColors = new[] {
-            0xFFf44b42,
+            0xFF044b42,
             0xFFf47141,
             0xFFf4ac41,
             0xFFf4d641,
@@ -61,7 +61,7 @@ namespace Kmeans
         /// <summary>
         /// Points number used in the test
         /// </summary>
-        public int TotalPoints { get; set; } = MaxPoints - 1;
+        public int TotalPoints { get; set; } = MaxPoints / 2;
 
         private static readonly int MinClusters = 2;
         private static readonly int MaxClusters = 20;
@@ -69,7 +69,7 @@ namespace Kmeans
         /// <summary>
         /// Amount of clusters to divide points into  
         /// </summary>
-        public int TotalClusters { get; set; } = MaxClusters - 1;
+        public int TotalClusters { get; set; } = MaxClusters / 2;
 
         public string this[string fieldName]
         {

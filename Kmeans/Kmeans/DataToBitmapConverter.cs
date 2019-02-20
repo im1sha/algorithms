@@ -57,6 +57,7 @@ namespace Kmeans
             (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusters,
             int sizeX, int sizeY, uint[] colors)
         {
+            const int centralPointRadius = 3;
 
             if (clusters.Length != colors.Length)
             {
@@ -67,12 +68,29 @@ namespace Kmeans
 
             uint[] pixels = Enumerable.Repeat(whiteColor, totalPoints).ToArray();
 
+            // draw other points
             for (int i = 0; i < clusters.Length; i++)
             {
                 for (int j = 0; j < clusters[i].StaticPoints.Length; j++)
                 {
                     pixels[clusters[i].StaticPoints[j].X +
                         clusters[i].StaticPoints[j].Y * sizeX] = colors[i];
+                }
+            }
+       
+            // draw central points
+            for (int i = 0; i < clusters.Length; i++)
+            {
+                for (int j = -centralPointRadius; j <= centralPointRadius; j++)
+                {
+                    for (int k = -centralPointRadius; k <= centralPointRadius; k++)
+                    {
+                        if ((clusters[i].Сenter.X + j < sizeX) && (clusters[i].Сenter.X + j > 0) && 
+                            (clusters[i].Сenter.Y + k < sizeY) && (clusters[i].Сenter.Y + k > 0))
+                        {
+                            pixels[clusters[i].Сenter.X + j + (clusters[i].Сenter.Y + k) * sizeX] = colors[i];
+                        }                        
+                    }
                 }
             }
 
