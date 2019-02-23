@@ -47,8 +47,8 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" DataContext="{Binding Model}">
-            <Image Stretch="Fill" Margin="10 10 0 10" Source="{Binding Image, UpdateSourceTrigger=PropertyChanged}"></Image>
+        <Grid Grid.Column="0" >
+            <Image Stretch="Fill" Margin="10 10 0 10" Source="{Binding Image, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
         <Grid x:Name="input" Grid.Column="1">

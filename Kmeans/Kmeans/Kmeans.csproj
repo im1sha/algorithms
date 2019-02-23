@@ -66,6 +66,7 @@
     <Compile Include="InitialData.cs" />
     <Compile Include="ApplicationModel.cs" />
     <Compile Include="InteractCommand.cs" />
+    <Compile Include="IRefresh.cs" />
     <Compile Include="StaticPoint.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

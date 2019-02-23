@@ -6,11 +6,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Kmeans
 {
-    public class ApplicationViewModel : INotifyPropertyChanged
+    public class ApplicationViewModel : INotifyPropertyChanged, IRefresh
     {
         public InitialData InitialData { get; set; } = new InitialData();
 
@@ -28,6 +30,27 @@ namespace Kmeans
             }
         }
 
+        private BitmapSource image;
+        public BitmapSource Image
+        {
+            get { return image; }
+            set
+            {
+                image = value;
+                OnPropertyChanged("Image");
+            }
+        }
+
+
+        public void Refresh()
+        {
+            if (model == null)
+            {
+                return;
+            }
+            Image = model.Image;
+        }
+
         // command of execution starting  
         private InteractCommand executeCommand;
         public InteractCommand ExecuteCommand
@@ -37,19 +60,22 @@ namespace Kmeans
                 return executeCommand ??
                     (executeCommand = new InteractCommand(obj =>
                     {
-                        Model = new ApplicationModel(InitialData.TotalClusters, 
-                            InitialData.TotalPoints, InitialData.DefaultImageSizeInPixels, 
-                            InitialData.Colors);
+                        Model = new ApplicationModel(InitialData.TotalClusters, InitialData.TotalPoints, 
+                            InitialData.DefaultImageSizeInPixels, InitialData.Colors);
                         Model.StartExecution();
                     }));
             }
+        }
+
+        public ApplicationViewModel()
+        {
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string property = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }
+        }      
     }
 }
 
