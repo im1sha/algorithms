@@ -12,7 +12,8 @@ namespace Kmeans
 {
     static class DataToBitmapConverter
     {
-        public const uint whiteColor = 0xFFFFFFFF;
+        public const uint WHITE_COLOR = 0xFFFFFFFF;
+        public const uint BLACK_COLOR = 0xFF000000;
 
         public static BitmapSource ClustersToBitmap((StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusters,
             int sizeX, int sizeY, uint[] colors)
@@ -27,8 +28,8 @@ namespace Kmeans
         /// Converts sequence of colors represented in format #AARRGGBB to bitmap
         /// </summary>
         /// <param name="pixels">Array containing color for each the pixel</param>
-        /// <param name="sizeX"></param>
-        /// <param name="sizeY"></param>
+        /// <param name="sizeX">Horizontal image dimension</param>
+        /// <param name="sizeY">Vertical image dimension</param>
         /// <param name="dpiX"></param>
         /// <param name="dpiY"></param>
         /// <returns>Image represented as BitmapSource</returns>
@@ -46,7 +47,7 @@ namespace Kmeans
         }
 
         /// <summary>
-        /// 
+        /// Generates representation of clusters as numeric array
         /// </summary>
         /// <param name="clusters"></param>      
         /// <param name="sizeX"></param>
@@ -57,8 +58,8 @@ namespace Kmeans
             (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusters,
             int sizeX, int sizeY, uint[] colors)
         {
-            const int centralPointRadius = 3;
-            const int staticPointRadius = 0;
+            const int CENTRAL_RADIUS = 3;
+            const int USUAL_RADIUS = 1;
 
             if (clusters.Length != colors.Length)
             {
@@ -67,21 +68,21 @@ namespace Kmeans
 
             int totalPoints = sizeX * sizeY;
 
-            uint[] pixels = Enumerable.Repeat(whiteColor, totalPoints).ToArray();
+            uint[] pixels = Enumerable.Repeat(WHITE_COLOR, totalPoints).ToArray();
 
             // draw other points
             for (int i = 0; i < clusters.Length; i++)
             {
                 for (int j = 0; j < clusters[i].StaticPoints.Length; j++)
                 {
-                    DrawPoint(pixels, clusters[i].StaticPoints[j].X, clusters[i].StaticPoints[j].Y, sizeX, sizeY, staticPointRadius, colors[i]);
+                    DrawPoint(pixels, clusters[i].StaticPoints[j].X, clusters[i].StaticPoints[j].Y, sizeX, sizeY, USUAL_RADIUS, colors[i]);
                 }
             }
        
             // draw central points
             for (int i = 0; i < clusters.Length; i++)
             {         
-                DrawPoint(pixels, clusters[i].Сenter.X, clusters[i].Сenter.Y, sizeX, sizeY, centralPointRadius, colors[i]);
+                DrawPoint(pixels, clusters[i].Сenter.X, clusters[i].Сenter.Y, sizeX, sizeY, CENTRAL_RADIUS, BLACK_COLOR);
             }
 
             return pixels;

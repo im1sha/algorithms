@@ -60,10 +60,27 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             
             <Label Grid.Row="0" Content="Clusters"  />
             <Label Grid.Row="2" Content="Points"  />
+            
+            <Grid Grid.Row="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Iterations" />
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Iteration}" />
+                <Label Grid.Row="1" Grid.Column="0" Content="Time in ms" />
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
+            </Grid>
+            
 
             <Button Grid.Row="4" Margin="15" Command="{Binding ExecuteCommand}" 
                     IsEnabled="{Binding 

@@ -59,7 +59,7 @@ namespace Kmeans
         {
             get
             {
-                return $"points number should be in following bounds: [{MinPoints}, {MaxPoints}) ";
+                return $"points number should be in following bounds: [ {minPoints}, {maxPoints} ) ";
             }
         }
 
@@ -67,19 +67,19 @@ namespace Kmeans
         {
             get
             {
-                return $"clusters number should be in following bounds: [{MinClusters}, {MaxClusters})";
+                return $"clusters number should be in following bounds: [ {minClusters}, {maxClusters} )";
             }
         }
 
-        private const string TotalPointsPropertyAsString = "TotalPoints";
-        private const string TotalClustersPropertyAsString = "TotalClusters";
+        private const string TOTAL_POINTS_PROPERTY_AS_STRING = "TotalPoints";
+        private const string TOTAL_CLUSTERS_PROPERTY_AS_STRING = "TotalClusters";
 
-        public const int DefaultImageSizeInPixels = 1_000;
+        public const int DEFAULT_IMAGE_SIZE_IN_PIXELS = 1_000;
 
-        private static readonly int MinPoints = 1_000;
-        private static readonly int MaxPoints = 100_000;
+        private static readonly int minPoints = 1_000;
+        private static readonly int maxPoints = 100_000;
 
-        private int totalPoints = MaxPoints / 2;
+        private int totalPoints = maxPoints / 2;
         /// <summary>
         /// Points number used in the test
         /// </summary>
@@ -92,15 +92,15 @@ namespace Kmeans
                 {
                     return;
                 }
-                CheckBounds(intValue, MinPoints, MaxPoints, TotalPointsPropertyAsString, PointsError);                
+                CheckBounds(intValue, minPoints, maxPoints, TOTAL_POINTS_PROPERTY_AS_STRING, PointsError);                
                 totalPoints = intValue;
             }
         }
 
-        private static readonly int MinClusters = 2;
-        private static readonly int MaxClusters = 20;
+        private static readonly int minClusters = 2;
+        private static readonly int maxClusters = 20;
 
-        private int totalClusters = MaxClusters / 2;
+        private int totalClusters = maxClusters / 2;
         /// <summary>
         /// Amount of clusters to divide points into  
         /// </summary>
@@ -113,7 +113,7 @@ namespace Kmeans
                 {
                     return;
                 }
-                CheckBounds(intValue, MinClusters, MaxClusters, TotalClustersPropertyAsString, ClustersError);
+                CheckBounds(intValue, minClusters, maxClusters, TOTAL_CLUSTERS_PROPERTY_AS_STRING, ClustersError);
                 totalClusters = intValue;
             }
         }
