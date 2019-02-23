@@ -196,7 +196,7 @@ namespace Kmeans
             for (int i = 0; i < TotalClusters; i++)
             {            
                 // move center to StaticPoints
-                cluster[i].StaticPoints.Add(new StaticPoint(
+                cluster[i].StaticPoints.Insert(0, new StaticPoint(
                     cluster[i].Center.X,
                     cluster[i].Center.Y));
 
