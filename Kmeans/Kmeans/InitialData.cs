@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Kmeans
 {
-
-    public class InitialData : IDataErrorInfo
-    {
-        private uint[] defaultColors = new[] {
+    public class InitialData : IDataErrorInfo, INotifyPropertyChanged
+    {     
+        private readonly uint[] defaultColors = new[] {
             0xFF044b42,
             0xFFf47141,
             0xFFf4ac41,
@@ -36,10 +37,16 @@ namespace Kmeans
         public uint[] Colors
         {
             get
-            { 
-                uint[] colors = new uint[TotalClusters];
+            {
+                int totalColors = int.Parse(TotalClusters);
 
-                for (int i = 0; i < TotalClusters; i++)
+                if (totalColors > defaultColors.Length)
+                {
+                    throw new ArgumentException();
+                }
+                uint[] colors = new uint[totalColors];
+
+                for (int i = 0; i < totalColors; i++)
                 {
                     colors[i] = defaultColors[i];
                 }
@@ -47,7 +54,22 @@ namespace Kmeans
                 return colors;
             }
         }
-      
+
+        private string PointsError
+        {
+            get
+            {
+                return $"points number should be in following bounds: [{MinPoints}, {MaxPoints}) ";
+            }
+        }
+
+        private string ClustersError
+        {
+            get
+            {
+                return $"clusters number should be in following bounds: [{MinClusters}, {MaxClusters})";
+            }
+        }
 
         private const string TotalPointsPropertyAsString = "TotalPoints";
         private const string TotalClustersPropertyAsString = "TotalClusters";
@@ -57,51 +79,52 @@ namespace Kmeans
         private static readonly int MinPoints = 1_000;
         private static readonly int MaxPoints = 100_000;
 
-
+        private int totalPoints = MaxPoints / 2;
         /// <summary>
         /// Points number used in the test
         /// </summary>
-        public int TotalPoints { get; set; } = MaxPoints / 2;
+        public string TotalPoints
+        {
+            get { return totalPoints.ToString(); }
+            set
+            {
+                if (!int.TryParse(value, out int intValue))
+                {
+                    return;
+                }
+                CheckBounds(intValue, MinPoints, MaxPoints, TotalPointsPropertyAsString, PointsError);                
+                totalPoints = intValue;
+            }
+        }
 
         private static readonly int MinClusters = 2;
         private static readonly int MaxClusters = 20;
 
+        private int totalClusters = MaxClusters / 2;
         /// <summary>
         /// Amount of clusters to divide points into  
         /// </summary>
-        public int TotalClusters { get; set; } = MaxClusters / 2;
-
-        public string this[string fieldName]
+        public string TotalClusters
         {
-            get
+            get { return totalClusters.ToString(); }
+            set
             {
-                string error = string.Empty;
-                switch (fieldName)
+                if (!int.TryParse(value, out int intValue))
                 {
-                    case TotalPointsPropertyAsString:
-                        if (!InBounds(TotalPoints, MinPoints, MaxPoints))
-                        {
-                            error = $"points number should be in following bounds: [{MinPoints}, {MaxPoints}) ";
-                        }
-                        break;
-                    case TotalClustersPropertyAsString:
-                        if (!InBounds(TotalClusters, MinClusters, MaxClusters))
-                        {
-                            error = $"clusters number should be in following bounds: [{MinClusters}, {MaxClusters})";
-                        }
-                        break;
+                    return;
                 }
-
-                if (error != string.Empty)
-                {
-                    Error = error;
-                }
-
-                return error;
+                CheckBounds(intValue, MinClusters, MaxClusters, TotalClustersPropertyAsString, ClustersError);
+                totalClusters = intValue;
             }
         }
 
-        public string Error { get; private set; } = string.Empty;
+        public string this[string propertyName]
+        {
+            get
+            {
+                return !errors.ContainsKey(propertyName) ? null : errors[propertyName];
+            }
+        }
 
         /// <summary>
         /// Detects whether passed number is possible
@@ -110,10 +133,68 @@ namespace Kmeans
         /// <param name="lowerBound">Minimum value</param>
         /// <param name="upperBound">Maximum value</param>
         /// <returns>true if target value is in passed bounds, false otherwise</returns>
-        private bool InBounds(int target, int lowerBound, int upperBound)
+        private bool CheckBounds(int target, int lowerBound, int upperBound,
+            string propertyNameToChange, string errorMessage)
         {
-            return (target >= lowerBound) && (target < upperBound);
+            if ((target >= lowerBound) && (target < upperBound))
+            {
+                RemoveError(propertyNameToChange);
+                return true;
+            }
+
+            AddError(propertyNameToChange, errorMessage);
+            return false;
         }
+
+        private Dictionary<string, string> errors = new Dictionary<string, string>();
+
+        private void AddError(string propertyName, string error)
+        {
+            errors[propertyName] = error;
+            Enabled = false;
+        }
+
+        private void RemoveError(string propertyName)
+        {
+            if (errors.ContainsKey(propertyName))
+            {
+                errors.Remove(propertyName);
+            }
+            if (errors.Count == 0)
+            {
+                Enabled = true;
+            }
+        }
+
+        public string Error
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
+        private bool enabled = true;
+        public bool Enabled
+        {
+            get
+            {
+                return enabled;
+            }
+            set
+            {
+                enabled = value;
+                OnPropertyChanged("Enabled");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName]string property = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
+
+      
     }
 }
 

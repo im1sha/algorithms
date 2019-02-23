@@ -58,6 +58,7 @@ namespace Kmeans
             int sizeX, int sizeY, uint[] colors)
         {
             const int centralPointRadius = 3;
+            const int staticPointRadius = 0;
 
             if (clusters.Length != colors.Length)
             {
@@ -73,23 +74,29 @@ namespace Kmeans
             {
                 for (int j = 0; j < clusters[i].StaticPoints.Length; j++)
                 {
-                    pixels[clusters[i].StaticPoints[j].X +
-                        clusters[i].StaticPoints[j].Y * sizeX] = colors[i];
+                    DrawPoint(pixels, clusters[i].StaticPoints[j].X, clusters[i].StaticPoints[j].Y, sizeX, sizeY, staticPointRadius, colors[i]);
                 }
             }
        
             // draw central points
             for (int i = 0; i < clusters.Length; i++)
+            {         
+                DrawPoint(pixels, clusters[i].Сenter.X, clusters[i].Сenter.Y, sizeX, sizeY, centralPointRadius, colors[i]);
+            }
+
+            return pixels;
+        }
+
+        private static uint[] DrawPoint(uint[] pixels, int x, int y, int sizeX, int sizeY, int radius, uint color)
+        {
+            for (int j = -radius; j <= radius; j++)
             {
-                for (int j = -centralPointRadius; j <= centralPointRadius; j++)
+                for (int k = -radius; k <= radius; k++)
                 {
-                    for (int k = -centralPointRadius; k <= centralPointRadius; k++)
+                    if ((x + j < sizeX) && (x + j > 0) &&
+                        (y + k < sizeY) && (y + k > 0))
                     {
-                        if ((clusters[i].Сenter.X + j < sizeX) && (clusters[i].Сenter.X + j > 0) && 
-                            (clusters[i].Сenter.Y + k < sizeY) && (clusters[i].Сenter.Y + k > 0))
-                        {
-                            pixels[clusters[i].Сenter.X + j + (clusters[i].Сenter.Y + k) * sizeX] = colors[i];
-                        }                        
+                        pixels[x + j + (y + k) * sizeX] = color;
                     }
                 }
             }

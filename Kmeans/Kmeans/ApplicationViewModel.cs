@@ -60,7 +60,7 @@ namespace Kmeans
                 return executeCommand ??
                     (executeCommand = new InteractCommand(obj =>
                     {
-                        Model = new ApplicationModel(InitialData.TotalClusters, InitialData.TotalPoints, 
+                        Model = new ApplicationModel(int.Parse(InitialData.TotalClusters), int.Parse(InitialData.TotalPoints), 
                             InitialData.DefaultImageSizeInPixels, InitialData.Colors);
                         Model.StartExecution();
                     }));
