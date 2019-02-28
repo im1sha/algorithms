@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Maximin
 {
-    class Algorithm
+    class Maximin
     {
         /// <summary>
         /// Number of points used in the test
@@ -23,7 +23,7 @@ namespace Maximin
             {
                 if (CurrentClusters == null)
                 {
-                    return 0;
+                    throw new ApplicationException("Algorithm data is not initialized.");
                 }
                 return CurrentClusters.Count;
             }
@@ -38,10 +38,10 @@ namespace Maximin
 
         public bool IsFinalState { get; private set; }
 
+        // center is prototype
         private List<(StaticPoint Center, List<StaticPoint> StaticPoints)> CurrentClusters;
-        private List<(StaticPoint Center, List<StaticPoint> StaticPoints)> NewIterationClusters;
 
-        public Algorithm(int totalPoints, int maxCoordinate)
+        public Maximin(int totalPoints, int maxCoordinate)
         {
             TotalPoints = totalPoints;
             MaxCoordinate = maxCoordinate;
@@ -60,7 +60,6 @@ namespace Maximin
             Random random = new Random();
 
             CurrentClusters = new List<(StaticPoint Center, List<StaticPoint> StaticPoints)> ();
-            NewIterationClusters = new List<(StaticPoint Center, List<StaticPoint> StaticPoints)> ();
 
             // initialize center
             CurrentClusters.Add((new StaticPoint(random.Next() % MaxCoordinate, 
@@ -87,38 +86,59 @@ namespace Maximin
                 throw new ApplicationException("Algorithm data is not initialized.");
             }
 
-            // center is prototype
-            // 
-            // 1 get_threadshold ([] prototypes){} 
-            //      returns 0 for 1 point
-            //      exception if less than 1
-            // 2 get farest points foreach prototype
-            // 3 get new ptototype(List<> farestpoints) 
-            //      return farest if exists
-            //      return null otherwise
-            // 4 recalculate clusters
+            // get farthest point for each the prototype
+            (int distance, StaticPoint farthestPoint)[] farthestPoints = 
+                new (int, StaticPoint)[CurrentClusters.Count];
+            for (int i = 0; i < farthestPoints.Length; i++)
+            {
+                int indexOfFarthestPoint = CurrentClusters[i].Center.GetFarthestPointIndex(
+                    CurrentClusters[i].StaticPoints.ToArray());
 
-            //// correct clusters's positions 
-            //NewIterationClusters = CalculateClusters(CurrentClusters);
+                farthestPoints[i].farthestPoint = CurrentClusters[i].StaticPoints[indexOfFarthestPoint];
+                farthestPoints[i].distance = farthestPoints[i].farthestPoint.GetSquareOfDistanceTo(
+                    CurrentClusters[i].Center);
+            }
 
-            //StaticPoint[] controlValues = RecalculateCenters(ref NewIterationClusters);
+            // get threadshold
+            int thredshold = farthestPoints.Select(i => i.distance).Sum() / (2 * farthestPoints.Length);
 
-            //if (!IsClusterizationRight(controlValues, CentersToList(CurrentClusters).ToArray()))
-            //{
-            //    CurrentClusters = NewIterationClusters;
-            //    NewIterationClusters = new List<(StaticPoint Center, List<StaticPoint> StaticPoints)>();
-            //    return GetClustersCopy(CurrentClusters);
-            //}
-            //IsFinalState = true;
+            // get new prototype 
+            StaticPoint? newPrototype = GetNewPrototype(farthestPoints, thredshold);
+
+            if (newPrototype != null)
+            {
+                // recalculate clusters if new prototype added
+                CurrentClusters = CalculateClusters(CurrentClusters, (StaticPoint)newPrototype);
+                return GetClustersOutputCopy(CurrentClusters);            
+            }
+
+            IsFinalState = true;
+
             return null;
         }
 
-        private int GetThreadshold(StaticPoint[] centers)
+
+        private StaticPoint? GetNewPrototype((int distance, StaticPoint farthestPoint)[] farthestPoints, int thredshold)
         {
-            throw new NotImplementedException();
+            int indexOfFarthestPoint = 0;
+
+            for (int i = 0; i < farthestPoints.Length; i++)
+            {            
+                if (farthestPoints[i].distance > farthestPoints[indexOfFarthestPoint].distance)
+                {
+                    indexOfFarthestPoint = i; 
+                }
+            }
+
+            if (farthestPoints[indexOfFarthestPoint].distance <= thredshold)
+            {
+                return null;
+            }
+
+            return farthestPoints[indexOfFarthestPoint].farthestPoint;
         }
 
-        private (StaticPoint Center, StaticPoint[] StaticPoints)[] GetClustersCopy(
+        private (StaticPoint Center, StaticPoint[] StaticPoints)[] GetClustersOutputCopy(
             List<(StaticPoint Center, List<StaticPoint> StaticPoints)> source)
         {
             (StaticPoint Center, StaticPoint[] StaticPoints)[] result = new
@@ -144,25 +164,6 @@ namespace Maximin
             return result;
         }
 
-        private int GetNearestPointIndex(StaticPoint point, StaticPoint[] pointsToCompare)
-        {
-            int currentMinimalDistance = int.MaxValue;
-            int nearestPointIndex = 0;
-            int distanceToTargetPoint;
-
-            for (int i = 0; i < pointsToCompare.Length; i++)
-            {
-                distanceToTargetPoint = point.GetSquareOfDistanceTo(pointsToCompare[i]);
-                if (distanceToTargetPoint < currentMinimalDistance)
-                {
-                    currentMinimalDistance = distanceToTargetPoint;
-                    nearestPointIndex = i;
-                }
-            }
-
-            return nearestPointIndex;
-        }
-
         private List<(StaticPoint Center, List<StaticPoint> StaticPoints)> GetCentersAndEmptyClustersCopy(
             List<(StaticPoint Center, List<StaticPoint> StaticPoints)> source)
         {
@@ -185,27 +186,25 @@ namespace Maximin
         /// <param name="clusters">Initial array</param>
         /// <returns>Recalculated clusters array</returns>
         private List<(StaticPoint Center, List<StaticPoint> StaticPoints)> CalculateClusters(
-            List<(StaticPoint Center, List<StaticPoint> StaticPoints)> clusters)
+            List<(StaticPoint Center, List<StaticPoint> StaticPoints)> clusters, StaticPoint newPrototype)
         {
             List<(StaticPoint Center, List<StaticPoint> StaticPoints)> result =
                 GetCentersAndEmptyClustersCopy(clusters);
 
-            StaticPoint[] centersCopy = CentersToArray(clusters);
+            result.Add((newPrototype, new List<StaticPoint> ()));
+
+            StaticPoint[] centersCopy = CentersToArray(result);
 
             for (int i = 0; i < clusters.Count; i++)
             {
                 for (int j = 0; j < clusters[i].StaticPoints.Count; j++)
                 {
-                    int nearestCenterIndex = GetNearestPointIndex(clusters[i].StaticPoints[j], centersCopy);
-
+                    int nearestCenterIndex = clusters[i].StaticPoints[j].GetNearestPointIndex(centersCopy);
                     result[nearestCenterIndex].StaticPoints.Add(clusters[i].StaticPoints[j]);
                 }
             }
             return result;
         }
-
-
-
     }
 }
 

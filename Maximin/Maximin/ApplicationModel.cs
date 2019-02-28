@@ -23,7 +23,7 @@ namespace Maximin
         public int Iteration { get; private set; }
         public long TimeInMs { get; private set; }
 
-        private Algorithm executionLogic;
+        private Maximin executionLogic;
 
         private CancellationToken token;
         private CancellationTokenSource tokenSource;
@@ -32,7 +32,7 @@ namespace Maximin
         public ApplicationModel(int clusters, int points, int size, uint[] colors)
         {
             this.colors = colors;
-            executionLogic = new Algorithm(clusters, points, size);
+            executionLogic = new Maximin(clusters, points, size);
         }
 
         /// <summary>
