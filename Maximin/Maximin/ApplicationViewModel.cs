@@ -36,14 +36,14 @@ namespace Maximin
             }
         }
 
-        private int iteration;
-        public int Iteration
+        private int clusters;
+        public int Clusters
         {
-            get { return iteration; }
+            get { return clusters; }
             set
             {
-                iteration = value;
-                OnPropertyChanged("Iteration");
+                clusters = value;
+                OnPropertyChanged("Clusters");
             }
         }
 
@@ -68,7 +68,7 @@ namespace Maximin
                 return;
             }
             Image = model.Image;
-            Iteration = model.Iteration;
+            Clusters = model.Clusters;
             TimeInMs = model.TimeInMs;
         }
 
@@ -84,9 +84,8 @@ namespace Maximin
                     (executeCommand = new InteractCommand(obj =>
                     {
                         Model?.Dispose();                   
-                        Model = new ApplicationModel(int.Parse(InitialData.TotalClusters),
-                            int.Parse(InitialData.TotalPoints), InitialData.DEFAULT_IMAGE_SIZE_IN_PIXELS,
-                            InitialData.Colors);
+                        Model = new ApplicationModel(int.Parse(InitialData.TotalPoints), 
+                            InitialData.DEFAULT_IMAGE_SIZE_IN_PIXELS);
                         Model.StartExecution();                       
                     }));
             }

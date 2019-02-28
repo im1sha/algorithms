@@ -72,7 +72,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Clusters" />
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Iteration}" />
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Clusters}" />
                 <Label Grid.Row="1" Grid.Column="0" Content="Time in ms" />
                 <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
             </Grid>

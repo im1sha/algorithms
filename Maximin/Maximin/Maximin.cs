@@ -100,7 +100,8 @@ namespace Maximin
             }
 
             // get threadshold
-            int thredshold = farthestPoints.Select(i => i.distance).Sum() / (2 * farthestPoints.Length);
+            int thredshold = farthestPoints.Select(i => i.distance).Sum() / (2 * farthestPoints.Length); // correct thredshold
+
 
             // get new prototype 
             StaticPoint? newPrototype = GetNewPrototype(farthestPoints, thredshold);
@@ -117,6 +118,10 @@ namespace Maximin
             return null;
         }
 
+        private int GetThredshold()
+        {
+            throw new NotImplementedException();
+        }
 
         private StaticPoint? GetNewPrototype((int distance, StaticPoint farthestPoint)[] farthestPoints, int thredshold)
         {
@@ -173,7 +178,7 @@ namespace Maximin
 
             for (int i = 0; i < length; i++)
             {
-                result[i] = (source[i].Center, new List<StaticPoint>());
+                result.Add((source[i].Center, new List<StaticPoint>()));
             }
 
             return result;

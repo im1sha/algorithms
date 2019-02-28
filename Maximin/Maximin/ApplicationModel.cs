@@ -17,11 +17,10 @@ namespace Maximin
     {
         public bool IsCompleted { get; private set; }
 
-        private readonly uint[] colors;
         public BitmapSource Image { get; private set; }
 
-        public int Iteration { get; private set; }
-        public long TimeInMs { get; private set; }
+        public int Clusters { get; private set; } = 0;
+        public long TimeInMs { get; private set; } = 0;
 
         private Maximin executionLogic;
 
@@ -29,10 +28,9 @@ namespace Maximin
         private CancellationTokenSource tokenSource;
         private Task task;
 
-        public ApplicationModel(int clusters, int points, int size, uint[] colors)
+        public ApplicationModel(int points, int size)
         {
-            this.colors = colors;
-            executionLogic = new Maximin(clusters, points, size);
+            executionLogic = new Maximin(points, size);
         }
 
         /// <summary>
@@ -53,11 +51,17 @@ namespace Maximin
 
         private void Execute()
         {
+            List<uint> colors = new List<uint>();
+
+            ColorGenerator colorGenerator = new ColorGenerator();
+
             executionLogic.Initialize();
+
+            Clusters++;
+            colors.Add(colorGenerator.NextColorAsUInt());
 
             (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
 
-            int currentIteration = 0;
             var chrono = new Stopwatch();
             chrono.Start();        
             do
@@ -69,11 +73,13 @@ namespace Maximin
                 // retrieve data for UI
                 if (currentClusterizaiton != null)
                 {
-                    BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
-                        executionLogic.MaxCoordinate, executionLogic.MaxCoordinate, colors);
-                    SetImage(image);
+                    Clusters++;
+                    colors.Add(colorGenerator.NextColorAsUInt());
 
-                    Iteration = ++currentIteration;
+                    BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
+                        executionLogic.MaxCoordinate, executionLogic.MaxCoordinate, colors.ToArray());
+                    SetImage(image);
+                    
                     TimeInMs = chrono.ElapsedMilliseconds;
                 }
             } while (!executionLogic.IsFinalState);
