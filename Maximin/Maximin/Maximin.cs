@@ -59,11 +59,12 @@ namespace Maximin
 
             Random random = new Random();
 
-            CurrentClusters = new List<(StaticPoint Center, List<StaticPoint> StaticPoints)> ();
-
-            // initialize center
-            CurrentClusters.Add((new StaticPoint(random.Next() % MaxCoordinate, 
-                random.Next() % MaxCoordinate), new List<StaticPoint> ()));
+            CurrentClusters = new List<(StaticPoint Center, List<StaticPoint> StaticPoints)>
+            {
+                // initialize center
+                (new StaticPoint(random.Next() % MaxCoordinate, random.Next() % MaxCoordinate), 
+                    new List<StaticPoint>())
+            };
 
             // generate other points
             for (int i = 1; i < TotalPoints; i++)
@@ -99,10 +100,8 @@ namespace Maximin
                     CurrentClusters[i].Center);
             }
 
-            // get threadshold
-            int thredshold = farthestPoints.Select(i => i.distance).Sum() / (2 * farthestPoints.Length); // correct thredshold
-
-
+            int thredshold = GetThredshold(CentersToArray(CurrentClusters));
+                      
             // get new prototype 
             StaticPoint? newPrototype = GetNewPrototype(farthestPoints, thredshold);
 
@@ -118,9 +117,34 @@ namespace Maximin
             return null;
         }
 
-        private int GetThredshold()
+        private int GetThredshold(StaticPoint[] centers)
         {
-            throw new NotImplementedException();
+            if (centers == null || centers.Length == 0)
+            {
+                throw new ArgumentException("No centers.");
+            }
+            else if (centers.Length == 1)
+            {
+                return 0;
+            }
+
+            int result = 0;
+            if (centers.Length > 1)
+            {
+                int totalDistances = 0;
+                int totalLength = 0;
+                for (int i = 0; i < centers.Length - 1; i++)
+                {
+                    for (int j = i + 1; j < centers.Length; j++)
+                    {
+                        totalDistances++;
+                        totalLength += centers[i].GetSquareOfDistanceTo(centers[j]);
+                    }
+                }
+                result = totalLength / (2 * totalDistances);
+            }
+
+            return result;
         }
 
         private StaticPoint? GetNewPrototype((int distance, StaticPoint farthestPoint)[] farthestPoints, int thredshold)
@@ -135,7 +159,7 @@ namespace Maximin
                 }
             }
 
-            if (farthestPoints[indexOfFarthestPoint].distance <= thredshold)
+            if (farthestPoints[indexOfFarthestPoint].distance < thredshold)
             {
                 return null;
             }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Maximin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Maximin" Height="450" Width="800">
     <Window.Resources>
         
         <ControlTemplate x:Key="validationFailed">
