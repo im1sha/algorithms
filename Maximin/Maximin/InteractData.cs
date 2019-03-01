@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Maximin
 {
-    public class InitialData : IDataErrorInfo, INotifyPropertyChanged
+    public class InteractData : IDataErrorInfo, INotifyPropertyChanged
     {
 
         private string PointsError
@@ -78,7 +78,7 @@ namespace Maximin
         private void AddError(string propertyName, string error)
         {
             errors[propertyName] = error;
-            Enabled = false;
+            ErrorInFiledText = true;
         }
 
         private void RemoveError(string propertyName)
@@ -89,7 +89,7 @@ namespace Maximin
             }
             if (errors.Count == 0)
             {
-                Enabled = true;
+                ErrorInFiledText = false;
             }
         }
 
@@ -114,6 +114,36 @@ namespace Maximin
                 OnPropertyChanged("Enabled");
             }
         }
+
+        private bool canApplyKmeans = false;
+        public bool CanApplyKmeans
+        {
+            get { return canApplyKmeans; }
+            set
+            {
+                canApplyKmeans = value;
+                OnPropertyChanged("CanApplyKmeans");
+            }
+        }
+
+        private bool errorInFieldText = false;
+        public bool ErrorInFiledText
+        {
+            get { return errorInFieldText;  }
+            private set { errorInFieldText = value; SetEnabledField(); }
+        }
+
+        private bool canApplyMaximin = true;
+        public bool CanApplyMaximin
+        {
+            get { return canApplyMaximin; }
+            set { canApplyMaximin = value; SetEnabledField(); }
+        }
+
+        private void SetEnabledField()
+        {
+            Enabled = !ErrorInFiledText && CanApplyMaximin;
+        } 
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string property = "")

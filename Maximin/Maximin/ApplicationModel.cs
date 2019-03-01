@@ -15,22 +15,39 @@ namespace Maximin
 {
     public class ApplicationModel : IDisposable
     {
-        public bool IsCompleted { get; private set; }
+        private bool IsMaximinStarted { get; set; } = false;
+        private bool IsMaximinCompleted { get; set; } = false;
+        private bool IsKmeansApplied { get; set; } = false;
+        private bool IsKmeansCompleted { get; set; } = false;
+
+        public bool IsStarted { get { return IsMaximinStarted; } }
+        public bool CanApplyKmeans { get { return IsMaximinCompleted && !IsKmeansApplied; } }
+        public bool CanApplyMaximin { get { return !IsMaximinStarted || IsKmeansCompleted; } }
+        public bool IsFinished { get { return IsKmeansCompleted; } }
 
         public BitmapSource Image { get; private set; }
 
         public int Clusters { get; private set; } = 0;
+        public int Points { get; private set; }
+        public int Size { get; private set; }
         public long TimeInMs { get; private set; } = 0;
+        public string State { get; private set; } = "Ready.";
 
-        private Maximin executionLogic;
+        private Maximin maximin;
 
         private CancellationToken token;
         private CancellationTokenSource tokenSource;
         private Task task;
 
+        private List<uint> colors;
+        private (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusterization;
+        private Stopwatch timer = new Stopwatch();
+      
         public ApplicationModel(int points, int size)
         {
-            executionLogic = new Maximin(points, size);
+            Size = size;
+            Points = points;
+            maximin = new Maximin(points, size);
         }
 
         /// <summary>
@@ -40,63 +57,122 @@ namespace Maximin
         {
             tokenSource = new CancellationTokenSource();
             token = tokenSource.Token;
-            task = Task.Run((Action)Execute, token);          
+            task = Task.Run((Action)ExecuteMaximin, token);          
         }
 
-        private void SetImage(BitmapSource newValue)
+        private void ExecuteMaximin()
         {
-            newValue.Freeze();
-            Image = newValue;
-        }
+            IsMaximinStarted = true;
+            State = "Maximin is running.";
 
-        private void Execute()
-        {
-            List<uint> colors = new List<uint>();
-
+            colors = new List<uint>();
             ColorGenerator colorGenerator = new ColorGenerator();
-
-            executionLogic.Initialize();
-
-            Clusters++;
-            colors.Add(colorGenerator.NextColorAsUInt());
-
             (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
 
-            var chrono = new Stopwatch();
-            chrono.Start();        
+            maximin.Initialize();
+            Clusters++;
+            colors.Add(colorGenerator.NextColorAsUInt());
+       
+            timer.Start();        
             do
             {               
                 token.ThrowIfCancellationRequested();
 
-                currentClusterizaiton = executionLogic.Reclusterize();
-
+                currentClusterizaiton = maximin.Reclusterize();
                 // retrieve data for UI
                 if (currentClusterizaiton != null)
                 {
+                    clusterization = currentClusterizaiton;
                     Clusters++;
                     colors.Add(colorGenerator.NextColorAsUInt());
 
                     BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
-                        executionLogic.MaxCoordinate, executionLogic.MaxCoordinate, colors.ToArray());
+                        maximin.MaxCoordinate, maximin.MaxCoordinate, colors.ToArray());
                     SetImage(image);
                     
-                    TimeInMs = chrono.ElapsedMilliseconds;
+                    TimeInMs = timer.ElapsedMilliseconds;
                 }
-            } while (!executionLogic.IsFinalState);
+            } while (!maximin.IsFinalState);
+            timer.Stop();
 
-            chrono.Stop();
-            IsCompleted = true;
+            State = "Maximin is completed.";
+            IsMaximinCompleted = true;
         }
-    
+
+        public void ApplyKmeans()
+        {
+            algorithmUseDispose = true;
+            Dispose(DisposeRequestType.Inner);
+
+            tokenSource = new CancellationTokenSource();
+            token = tokenSource.Token;
+            task = Task.Run((Action)ExecuteKmeans, token);
+
+            algorithmUseDispose = false;
+            if (isDisposeRequestedByUser)
+            {
+                Dispose(DisposeRequestType.User);
+                isDisposeRequestedByUser = false;
+            }
+        }
+
+        private void ExecuteKmeans()
+        {          
+            if (clusterization == null)
+            {
+                throw new ApplicationException("Clusterization isn't set.");
+            }
+
+            IsKmeansApplied = true;
+            Kmeans kmeans = new Kmeans(Clusters, Points, Size);
+            kmeans.SetInitialClustarization(clusterization);
+
+            (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
+            int currentIteration = 0;
+            State = $"Kmeans: iteration {currentIteration}.";
+
+            timer.Start();
+            do
+            {
+                token.ThrowIfCancellationRequested();
+
+                currentClusterizaiton = kmeans.Reclusterize();
+
+                // retrieve data for UI
+                if (currentClusterizaiton != null)
+                {
+                    BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
+                        kmeans.MaxCoordinate, kmeans.MaxCoordinate, colors.ToArray());
+                    SetImage(image);
+
+                    State = $"Kmeans: iteration {++currentIteration}.";
+                    TimeInMs = timer.ElapsedMilliseconds;
+                }
+            } while (!kmeans.IsFinalState);
+            timer.Stop();
+
+            State = $"Kmeans is completed.";
+            IsKmeansCompleted = true;
+        }
 
         #region IDisposable Support
+
+        private bool algorithmUseDispose = false; // disposing beetween maximin & kmeans
+        private bool isDisposeRequestedByUser = false;
+
         private bool disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(DisposeRequestType requst)
         {
+            if (algorithmUseDispose && requst == DisposeRequestType.User)
+            {
+                isDisposeRequestedByUser = true;
+                return;
+            }
+
             if (!disposedValue)
             {
-                if (disposing) { }
+                if (requst == DisposeRequestType.GC) { }
 
                 try
                 {
@@ -129,21 +205,32 @@ namespace Maximin
                 }
                 finally
                 {
-                    disposedValue = true;
+                    if (requst == DisposeRequestType.GC || requst == DisposeRequestType.User)
+                    {
+                        disposedValue = true;
+                    }
                 }
             }
         }
 
         ~ApplicationModel()
         {
-            Dispose(false);
+            Dispose(DisposeRequestType.GC);
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(DisposeRequestType.User);
         }
+
+        protected enum DisposeRequestType { GC, User, Inner/*initiated by algorithm*/ }
         #endregion
+
+        private void SetImage(BitmapSource newValue)
+        {
+            newValue.Freeze();
+            Image = newValue;
+        }
     }
 }
 

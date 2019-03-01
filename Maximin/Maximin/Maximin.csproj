@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Kmeans.cs" />
     <Compile Include="ColorGenerator.cs" />
     <Compile Include="StaticPoint.cs" />
     <Page Include="MainWindow.xaml">
@@ -69,7 +70,7 @@
     <Compile Include="ApplicationModel.cs" />
     <Compile Include="ApplicationViewModel.cs" />
     <Compile Include="DataToBitmapConverter.cs" />
-    <Compile Include="InitialData.cs" />
+    <Compile Include="InteractData.cs" />
     <Compile Include="InteractCommand.cs" />
     <Compile Include="IRefresh.cs" />
     <Compile Include="MainWindow.xaml.cs">

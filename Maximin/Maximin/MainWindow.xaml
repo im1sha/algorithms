@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Maximin"
         mc:Ignorable="d"
-        Title="Maximin" Height="450" Width="800">
+        Title="Maximin &amp; kmeans" Height="600" Width="900">
     <Window.Resources>
         
         <ControlTemplate x:Key="validationFailed">
@@ -58,37 +58,47 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             
             <Label Grid.Row="0" Content="Points"  />
             
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="4">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Clusters" />
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding Clusters}" />
                 <Label Grid.Row="1" Grid.Column="0" Content="Time in ms" />
                 <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
+                <Label Grid.Row="2" Grid.Column="0" Content="State" />
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding State}" />
             </Grid>
             
 
             <Button Grid.Row="2" Margin="15" Command="{Binding ExecuteCommand}" 
                     IsEnabled="{Binding 
-                        Path=InitialData.Enabled, 
+                        Path=InteractData.Enabled, 
                         UpdateSourceTrigger=PropertyChanged}" 
-                    Content="Calculate" />
+                    Content="Maximin" />
+            
+            <Button Grid.Row="3" Margin="15 0 15 15" Command="{Binding ApplyCommand}" 
+                    IsEnabled="{Binding 
+                        Path=InteractData.CanApplyKmeans, 
+                        UpdateSourceTrigger=PropertyChanged}" 
+                    Content="Apply kmeans" />
 
 
             <TextBox Grid.Row="1" 
                      Validation.ErrorTemplate="{StaticResource validationFailed}">
                 <TextBox.Text>
-                    <Binding Path="InitialData.TotalPoints"
+                    <Binding Path="InteractData.TotalPoints"
                              NotifyOnValidationError="True"
                              UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>

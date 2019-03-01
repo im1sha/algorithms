@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
 
@@ -9,7 +10,7 @@ namespace Maximin
         /// <summary>
         /// User's input and predefined restrictions
         /// </summary>
-        public InitialData InitialData { get; set; } = new InitialData();
+        public InteractData InteractData { get; set; } = new InteractData();
 
         private ApplicationModel model;
         public ApplicationModel Model
@@ -58,6 +59,17 @@ namespace Maximin
             }
         }
 
+        private string state;
+        public string State
+        {
+            get { return state; }
+            set
+            {
+                state = value;
+                OnPropertyChanged("State");
+            }
+        }
+
         /// <summary>
         /// Interacts with UI
         /// </summary>
@@ -70,6 +82,9 @@ namespace Maximin
             Image = model.Image;
             Clusters = model.Clusters;
             TimeInMs = model.TimeInMs;
+            State = model.State;
+            InteractData.CanApplyKmeans = model.CanApplyKmeans;
+            InteractData.CanApplyMaximin = model.CanApplyMaximin;
         }
 
         private InteractCommand executeCommand;
@@ -84,9 +99,25 @@ namespace Maximin
                     (executeCommand = new InteractCommand(obj =>
                     {
                         Model?.Dispose();                   
-                        Model = new ApplicationModel(int.Parse(InitialData.TotalPoints), 
-                            InitialData.DEFAULT_IMAGE_SIZE_IN_PIXELS);
+                        Model = new ApplicationModel(int.Parse(InteractData.TotalPoints), 
+                            InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS);
                         Model.StartExecution();                       
+                    }));
+            }
+        }
+
+        private InteractCommand applyCommand;
+        /// <summary>
+        /// Starts model execution
+        /// </summary>
+        public InteractCommand ApplyCommand
+        {
+            get
+            {
+                return applyCommand ??
+                    (applyCommand = new InteractCommand(obj =>
+                    {
+                        Model?.ApplyKmeans();
                     }));
             }
         }

@@ -17,7 +17,7 @@ namespace Maximin
             Y = y;
         }
 
-        private int GetSquareOfDistanceTo(StaticPoint anotherPoint)
+        public int GetSquareOfDistanceTo(StaticPoint anotherPoint)
         {
             return (int)(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0));
         }
