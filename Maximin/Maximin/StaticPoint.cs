@@ -16,14 +16,24 @@ namespace Maximin
             X = x;
             Y = y;
         }
-     
-        public int GetSquareOfDistanceTo(StaticPoint anotherPoint)
+
+        private int GetSquareOfDistanceTo(StaticPoint anotherPoint)
         {
             return (int)(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0));
         }
 
+        public int GetDistanceTo(StaticPoint anotherPoint)
+        {
+            return (int)Math.Sqrt(Math.Pow(anotherPoint.X - X, 2.0) + Math.Pow(anotherPoint.Y - Y, 2.0));
+        }
+
         public int GetNearestPointIndex(StaticPoint[] pointsToCompare)
         {
+            if (pointsToCompare == null || pointsToCompare.Length == 0)
+            {
+                throw new ArgumentNullException();
+            }
+
             int currentMinimalDistance = int.MaxValue;
             int nearestPointIndex = 0;
             int distanceToTargetPoint;
@@ -43,6 +53,11 @@ namespace Maximin
 
         public int GetFarthestPointIndex(StaticPoint[] pointsToCompare)
         {
+            if (pointsToCompare == null || pointsToCompare.Length == 0)
+            {
+                throw new ArgumentNullException();
+            }
+
             int currentMaximalDistance = int.MinValue;
             int farthestPointIndex = 0;
             int distanceToTargetPoint;
