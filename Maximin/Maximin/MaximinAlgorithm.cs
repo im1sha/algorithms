@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Maximin
 {
-    class Maximin
+    class MaximinAlgorithm
     {
         /// <summary>
         /// Number of points used in the test
@@ -41,7 +41,7 @@ namespace Maximin
         // center is prototype
         private List<(StaticPoint Center, List<StaticPoint> StaticPoints)> CurrentClusters;
 
-        public Maximin(int totalPoints, int maxCoordinate)
+        public MaximinAlgorithm(int totalPoints, int maxCoordinate)
         {
             TotalPoints = totalPoints;
             MaxCoordinate = maxCoordinate;

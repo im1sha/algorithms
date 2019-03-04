@@ -33,7 +33,7 @@ namespace Maximin
         public long TimeInMs { get; private set; } = 0;
         public string State { get; private set; } = "Ready.";
 
-        private Maximin maximin;
+        private MaximinAlgorithm maximin;
 
         private CancellationToken token;
         private CancellationTokenSource tokenSource;
@@ -47,7 +47,7 @@ namespace Maximin
         {
             Size = size;
             Points = points;
-            maximin = new Maximin(points, size);
+            maximin = new MaximinAlgorithm(points, size);
         }
 
         /// <summary>
