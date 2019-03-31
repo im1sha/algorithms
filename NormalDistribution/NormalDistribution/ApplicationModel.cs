@@ -33,21 +33,21 @@ namespace NormalDistribution
         public long TimeInMs { get; private set; } = 0;
         public string State { get; private set; } = "Ready.";
 
-        private MaximinAlgorithm maximin;
+        //private MaximinAlgorithm maximin;
 
         private CancellationToken token;
         private CancellationTokenSource tokenSource;
         private Task task;
 
         private List<uint> colors;
-        private (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusterization;
+       // private (StaticPoint Сenter, StaticPoint[] StaticPoints)[] clusterization;
         private Stopwatch timer = new Stopwatch();
       
         public ApplicationModel(int points, int size)
         {
             Size = size;
             Points = points;
-            maximin = new MaximinAlgorithm(points, size);
+       //     maximin = new MaximinAlgorithm(points, size);
         }
 
         /// <summary>
@@ -62,41 +62,41 @@ namespace NormalDistribution
 
         private void ExecuteMaximin()
         {
-            IsMaximinStarted = true;
-            State = "Maximin is running.";
+            //IsMaximinStarted = true;
+            //State = "Maximin is running.";
 
-            colors = new List<uint>();
-            ColorGenerator colorGenerator = new ColorGenerator();
-            (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
+            //colors = new List<uint>();
+            //ColorGenerator colorGenerator = new ColorGenerator();
+            //(StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
 
-            maximin.Initialize();
-            Clusters++;
-            colors.Add(colorGenerator.NextColorAsUInt());
+            //maximin.Initialize();
+            //Clusters++;
+            //colors.Add(colorGenerator.NextColorAsUInt());
        
-            timer.Start();        
-            do
-            {               
-                token.ThrowIfCancellationRequested();
+            //timer.Start();        
+            //do
+            //{               
+            //    token.ThrowIfCancellationRequested();
 
-                currentClusterizaiton = maximin.Reclusterize();
-                // retrieve data for UI
-                if (currentClusterizaiton != null)
-                {
-                    clusterization = currentClusterizaiton;
-                    Clusters++;
-                    colors.Add(colorGenerator.NextColorAsUInt());
+            //    currentClusterizaiton = maximin.Reclusterize();
+            //    // retrieve data for UI
+            //    if (currentClusterizaiton != null)
+            //    {
+            //        clusterization = currentClusterizaiton;
+            //        Clusters++;
+            //        colors.Add(colorGenerator.NextColorAsUInt());
 
-                    BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
-                        maximin.MaxCoordinate, maximin.MaxCoordinate, colors.ToArray());
-                    SetImage(image);
+            //        BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
+            //            maximin.MaxCoordinate, maximin.MaxCoordinate, colors.ToArray());
+            //        SetImage(image);
                     
-                    TimeInMs = timer.ElapsedMilliseconds;
-                }
-            } while (!maximin.IsFinalState);
-            timer.Stop();
+            //        TimeInMs = timer.ElapsedMilliseconds;
+            //    }
+            //} while (!maximin.IsFinalState);
+            //timer.Stop();
 
-            State = "Maximin is completed.";
-            IsMaximinCompleted = true;
+            //State = "Maximin is completed.";
+            //IsMaximinCompleted = true;
         }
 
         public void ApplyKmeans()
@@ -118,41 +118,41 @@ namespace NormalDistribution
 
         private void ExecuteKmeans()
         {          
-            if (clusterization == null)
-            {
-                throw new ApplicationException("Clusterization isn't set.");
-            }
+            //if (clusterization == null)
+            //{
+            //    throw new ApplicationException("Clusterization isn't set.");
+            //}
 
-            IsKmeansApplied = true;
-            Kmeans kmeans = new Kmeans(Clusters, Points, Size);
-            kmeans.SetInitialClustarization(clusterization);
+            //IsKmeansApplied = true;
+            //Kmeans kmeans = new Kmeans(Clusters, Points, Size);
+            //kmeans.SetInitialClustarization(clusterization);
 
-            (StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
-            int currentIteration = 0;
-            State = $"Kmeans: iteration {currentIteration}.";
+            //(StaticPoint Сenter, StaticPoint[] StaticPoints)[] currentClusterizaiton;
+            //int currentIteration = 0;
+            //State = $"Kmeans: iteration {currentIteration}.";
 
-            timer.Start();
-            do
-            {
-                token.ThrowIfCancellationRequested();
+            //timer.Start();
+            //do
+            //{
+            //    token.ThrowIfCancellationRequested();
 
-                currentClusterizaiton = kmeans.Reclusterize();
+            //    currentClusterizaiton = kmeans.Reclusterize();
 
-                // retrieve data for UI
-                if (currentClusterizaiton != null)
-                {
-                    BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
-                        kmeans.MaxCoordinate, kmeans.MaxCoordinate, colors.ToArray());
-                    SetImage(image);
+            //    // retrieve data for UI
+            //    if (currentClusterizaiton != null)
+            //    {
+            //        BitmapSource image = DataToBitmapConverter.ClustersToBitmap(currentClusterizaiton,
+            //            kmeans.MaxCoordinate, kmeans.MaxCoordinate, colors.ToArray());
+            //        SetImage(image);
 
-                    State = $"Kmeans: iteration {++currentIteration}.";
-                    TimeInMs = timer.ElapsedMilliseconds;
-                }
-            } while (!kmeans.IsFinalState);
-            timer.Stop();
+            //        State = $"Kmeans: iteration {++currentIteration}.";
+            //        TimeInMs = timer.ElapsedMilliseconds;
+            //    }
+            //} while (!kmeans.IsFinalState);
+            //timer.Stop();
 
-            State = $"Kmeans is completed.";
-            IsKmeansCompleted = true;
+            //State = $"Kmeans is completed.";
+            //IsKmeansCompleted = true;
         }
 
         #region IDisposable Support

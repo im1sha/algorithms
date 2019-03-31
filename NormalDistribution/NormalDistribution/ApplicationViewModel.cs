@@ -83,8 +83,8 @@ namespace NormalDistribution
             Clusters = model.Clusters;
             TimeInMs = model.TimeInMs;
             State = model.State;
-            InteractData.CanApplyKmeans = model.CanApplyKmeans;
-            InteractData.CanApplyMaximin = model.CanApplyMaximin;
+            //InteractData.CanApplyKmeans = model.CanApplyKmeans;
+            //InteractData.CanApplyMaximin = model.CanApplyMaximin;
         }
 
         private InteractCommand executeCommand;

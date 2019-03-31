@@ -5,9 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NormalDistribution"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="900">
+        Title="normal distribution" Height="600" MinHeight="600" Width="900" MinWidth="900">
     <Window.Resources>
-
         <ControlTemplate x:Key="validationFailed">
             <StackPanel Orientation="Horizontal">
                 <Border BorderBrush="red" BorderThickness="1">
@@ -16,10 +15,9 @@
                 <TextBlock Foreground="red" FontWeight="ExtraBold">&#160;*</TextBlock>
             </StackPanel>
         </ControlTemplate>
-
         <Style TargetType="TextBox">
             <Setter Property="Height" Value="Auto" />
-            <Setter Property="Margin" Value="15 0 15 0" />
+            <Setter Property="Margin" Value="15 10" />
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
                     <Setter Property="ToolTip"
@@ -32,33 +30,29 @@
         </Style>
         <Style TargetType="Button">
             <Setter Property="Height" Value="30" />
-            <Setter Property="Margin" Value="15 0 15 0" />
+            <Setter Property="Margin" Value="15 0" />
             <Setter Property="Background" Value="White" />
         </Style>
         <Style TargetType="Label">
-            <Setter Property="Margin" Value="15 0" />
+            <Setter Property="Margin" Value="15 10 15 0" />
         </Style>
-
     </Window.Resources>
+    
+    <!-- todo fix bindings-->
     <Grid x:Name="mainGrid">
+        
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" >
-            <Canvas Margin="10 10 0 10" Name="paintSurface" MouseDown="Canvas_MouseDown_1" MouseMove="Canvas_MouseMove_1" >
-                <Canvas.Background>
-                    <SolidColorBrush Color="White" Opacity="0"/>
-                </Canvas.Background>
-            </Canvas>
-
-            <!--<Image Stretch="Fill" Margin="10 10 0 10" Source="{Binding Image, UpdateSourceTrigger=PropertyChanged}" />-->
+        <Grid Grid.Column="0">
+            <Canvas Margin="5" Name="paintSurface" Background="White" />
         </Grid>
 
-        <Grid x:Name="input" Grid.Column="1">
+        <Grid Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -67,42 +61,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Content="Points"  />
-
-            <Grid Grid.Row="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-                <Label Grid.Row="0" Grid.Column="0" Content="Clusters" />
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Clusters}" />
-                <Label Grid.Row="1" Grid.Column="0" Content="Time in ms" />
-                <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
-                <Label Grid.Row="2" Grid.Column="0" Content="State" />
-                <Label Grid.Row="2" Grid.Column="1" Content="{Binding State}" />
-            </Grid>
-
-
-            <Button Grid.Row="2" Margin="15" Command="{Binding ExecuteCommand}" 
-                    IsEnabled="{Binding 
-                        Path=InteractData.Enabled, 
-                        UpdateSourceTrigger=PropertyChanged}" 
-                    Content="Maximin" />
-
-            <Button Grid.Row="3" Margin="15 0 15 15" Command="{Binding ApplyCommand}" 
-                    IsEnabled="{Binding 
-                        Path=InteractData.CanApplyKmeans, 
-                        UpdateSourceTrigger=PropertyChanged}" 
-                    Content="Apply kmeans" />
-
-
-            <TextBox Grid.Row="1" 
-                     Validation.ErrorTemplate="{StaticResource validationFailed}">
+            <!--total points--> 
+            <Label Grid.Row="0" Content="total points"  />
+            <TextBox Grid.Row="1" Validation.ErrorTemplate="{StaticResource validationFailed}">
                 <TextBox.Text>
                     <Binding Path="InteractData.TotalPoints"
                              NotifyOnValidationError="True"
@@ -113,6 +74,50 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+            <Button Grid.Row="2" 
+                    Command="{Binding ExecuteCommand}" 
+                    IsEnabled="{Binding Path=InteractData.Enabled, UpdateSourceTrigger=PropertyChanged}" 
+                    Content="generate distributions" >
+            </Button>
+
+            <!--probability of A-->
+            <Label Grid.Row="3" Content="prior probability"  />
+            <TextBox Grid.Row="4" Validation.ErrorTemplate="{StaticResource validationFailed}">
+                <TextBox.Text>
+                    <Binding Path="InteractData.TotalPoints"
+                             NotifyOnValidationError="True"
+                             UpdateSourceTrigger="PropertyChanged" >
+                        <Binding.ValidationRules>
+                            <DataErrorValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button Grid.Row="5" Command="{Binding ApplyCommand}" 
+                    IsEnabled="{Binding Path=InteractData.CanApplyKmeans, UpdateSourceTrigger=PropertyChanged}" 
+                    Content="process data" >
+            </Button>
+                     
+            <!--probabilities-->
+            <Grid Grid.Row="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="false alarm, %" />
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Clusters}" />
+                <Label Grid.Row="1" Grid.Column="0" Content="detection skip, %" />
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
+                <Label Grid.Row="2" Grid.Column="0" Content="summary, %" />
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding State}" />
+            </Grid>
 
         </Grid>
     </Grid>

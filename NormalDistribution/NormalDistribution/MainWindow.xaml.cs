@@ -34,38 +34,38 @@ namespace NormalDistribution
                 ((IRefresh)DataContext).Refresh();
         }
 
-        #region Test Canvas
+        //#region Test Canvas
 
-        Point currentPoint = new Point();
+        //Point currentPoint = new Point();
 
-        private void Canvas_MouseDown_1(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-            {
-                currentPoint = e.GetPosition(this);
-            }
-        }
+        //private void Canvas_MouseDown_1(object sender, MouseButtonEventArgs e)
+        //{
+        //    if (e.ButtonState == MouseButtonState.Pressed)
+        //    {
+        //        currentPoint = e.GetPosition(this);
+        //    }
+        //}
 
-        private void Canvas_MouseMove_1(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                Line line = new Line
-                {
-                    Stroke = SystemColors.WindowFrameBrush,
-                    X1 = currentPoint.X,
-                    Y1 = currentPoint.Y,
-                    X2 = e.GetPosition(this).X,
-                    Y2 = e.GetPosition(this).Y
-                };
+        //private void Canvas_MouseMove_1(object sender, MouseEventArgs e)
+        //{
+        //    if (e.LeftButton == MouseButtonState.Pressed)
+        //    {
+        //        Line line = new Line
+        //        {
+        //            Stroke = SystemColors.WindowFrameBrush,
+        //            X1 = currentPoint.X,
+        //            Y1 = currentPoint.Y,
+        //            X2 = e.GetPosition(this).X,
+        //            Y2 = e.GetPosition(this).Y
+        //        };
 
-                currentPoint = e.GetPosition(this);
+        //        currentPoint = e.GetPosition(this);
 
-                paintSurface.Children.Add(line);
-            }
-        }
+        //        paintSurface.Children.Add(line);
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
     }
 }
