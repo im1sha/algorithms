@@ -14,7 +14,7 @@ namespace NormalDistribution
 
         #region probability
 
-        private const string PROBABILITY_PROPERTY_AS_STRING = "TotalPoints";
+        private const string PROBABILITY_PROPERTY_AS_STRING = "Probability";
         private static readonly int minProbability = 0;
         private static readonly int maxProbability = 100;
         private string ProbabilityError
@@ -45,7 +45,7 @@ namespace NormalDistribution
 
         #endregion
 
-        #region totalpoints
+        #region total points
 
         private const string TOTAL_POINTS_PROPERTY_AS_STRING = "TotalPoints";
         private static readonly int minPoints = 10_000;
@@ -73,7 +73,8 @@ namespace NormalDistribution
                 {
                     return;
                 }
-                CheckBounds(intValue, minPoints, maxPoints, TOTAL_POINTS_PROPERTY_AS_STRING, PointsError);                
+                CheckBounds(intValue, minPoints, maxPoints, 
+                    TOTAL_POINTS_PROPERTY_AS_STRING, PointsError);                
                 totalPoints = intValue;
             }
         }

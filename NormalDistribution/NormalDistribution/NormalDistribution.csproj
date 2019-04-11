@@ -67,7 +67,6 @@
     <Compile Include="ApplicationViewModel.cs" />
     <Compile Include="InteractCommand.cs" />
     <Compile Include="InteractData.cs" />
-    <Compile Include="IRefresh.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

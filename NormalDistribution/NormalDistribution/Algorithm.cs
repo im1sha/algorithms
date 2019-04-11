@@ -22,7 +22,7 @@ namespace NormalDistribution
         private ((double point, double decisionRuleValue)[] values, double mean, double standardDeviation)[] data
             = new ((double point, double decisionRuleValue)[] values, double mean, double standardDeviation)[2];
 
-        #region Calculactions Results
+        #region Calculactions results
 
         private double falseAlarmError; // вероятность ложной тревоги
         public double FalseAlarmError {
@@ -59,7 +59,7 @@ namespace NormalDistribution
         {
             if (!IsCalculated)
             {
-                throw new InvalidOperationException();
+                throw new ApplicationException("Not calculated.");
             }
         }
 
@@ -69,8 +69,8 @@ namespace NormalDistribution
         /// <param name="maxPointPosition">Max value of point</param>
         public Algorithm(int totalPoints, int maxPointPosition)
         {
-            this.MaxPointPosition = maxPointPosition;
-            this.TotalPoints = totalPoints;
+            MaxPointPosition = maxPointPosition;
+            TotalPoints = totalPoints;
         }
 
         #region Initialization
@@ -184,7 +184,8 @@ namespace NormalDistribution
                 }
             }
 
-            (double point, double decisionRuleValue)[] chart = new (double point, double decisionRuleValue)[lastPos + 1];
+            (double point, double decisionRuleValue)[] chart = 
+                new (double point, double decisionRuleValue)[lastPos + 1];
 
             Array.Copy(values, chart, lastPos);
             chart[lastPos] = valueOfMinimumErrorPoint;
@@ -222,7 +223,7 @@ namespace NormalDistribution
         {
             if (values.Length <= 1)
             {
-                throw new InvalidOperationException("Chart should contain 2 or more points");
+                throw new ApplicationException("Chart should contain 2 or more points");
             }
 
             double area = 0;
@@ -279,19 +280,19 @@ namespace NormalDistribution
         {
             if (!IsInitialized)
             {
-                throw new InvalidOperationException("Not initialzed");
+                throw new ApplicationException("Not initialzed");
             }
 
-            double[][] sequences = new[] {
+            double[][] sequences = {
                 data[0].values.Select(i => i.decisionRuleValue).ToArray(),
                 data[1].values.Select(i => i.decisionRuleValue).ToArray()
             };
 
-            double[][] decisionRuleValues = new[] {
+            double[][] decisionRuleValues = {
                 CalculateDecisionRuleValuesSequence(sequences[0], priorProbability,
                     data[0].mean, data[0].standardDeviation),
-                CalculateDecisionRuleValuesSequence(sequences[0], priorProbability,
-                    data[0].mean, data[0].standardDeviation),
+                CalculateDecisionRuleValuesSequence(sequences[1], priorProbability,
+                    data[1].mean, data[1].standardDeviation),
             };
 
             // set decision rule values
@@ -299,11 +300,10 @@ namespace NormalDistribution
             {
                 for (int j = 0; j < data[i].values.Length; j++)
                 {
-                    data[i].values[i].decisionRuleValue = decisionRuleValues[i][j];
+                    data[i].values[j].decisionRuleValue = decisionRuleValues[i][j];
                 }
             }
-
-                  
+                
             ValueOfMinimumErrorPoint = CalculateValueOfMinimumErrorPoint(data[0].values, data[1].values);
             FalseAlarmError = CalculateFalseAlarmError(data[0].values, ValueOfMinimumErrorPoint);
             DetectionSkipError = CalculateDetectionSkipError(data[1].values, valueOfMinimumErrorPoint);

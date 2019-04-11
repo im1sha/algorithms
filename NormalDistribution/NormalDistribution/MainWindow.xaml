@@ -46,8 +46,8 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0">
-            <Canvas Margin="5" Name="paintSurface" Background="White" />
+        <Grid Grid.Column="0" MouseDown="Grid_MouseDown">
+            <Canvas Margin="5" Name="paintSurface" Background="White"  />
         </Grid>
 
         <Grid Grid.Column="1">
