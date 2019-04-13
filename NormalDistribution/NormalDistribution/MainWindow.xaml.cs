@@ -26,9 +26,5 @@ namespace NormalDistribution
             InitializeComponent();
             DataContext = new ApplicationViewModel();
         }
-
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-        }
     }
 }

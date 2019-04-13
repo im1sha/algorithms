@@ -65,6 +65,7 @@
     </Compile>
     <Compile Include="ApplicationModel.cs" />
     <Compile Include="ApplicationViewModel.cs" />
+    <Compile Include="ImageGenerator.cs" />
     <Compile Include="InteractCommand.cs" />
     <Compile Include="InteractData.cs" />
     <Compile Include="MainWindow.xaml.cs">

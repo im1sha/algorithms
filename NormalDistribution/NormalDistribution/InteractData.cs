@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace NormalDistribution
 {
@@ -12,7 +13,7 @@ namespace NormalDistribution
     {
         public const int DEFAULT_IMAGE_SIZE_IN_PIXELS = 10_000;
 
-        #region probability
+        #region probability (%)
 
         private const string PROBABILITY_PROPERTY_AS_STRING = "Probability";
         private static readonly int minProbability = 0;
@@ -26,6 +27,9 @@ namespace NormalDistribution
         }
 
         private int probability = maxProbability / 2;
+        /// <summary>
+        /// %
+        /// </summary>
         public string Probability
         {
             get { return probability.ToString(); }
@@ -37,7 +41,7 @@ namespace NormalDistribution
                 {
                     return;
                 }
-                CheckBounds(intValue, minProbability, maxProbability,
+                UpdateUI(intValue, minProbability, maxProbability,
                     PROBABILITY_PROPERTY_AS_STRING, ProbabilityError);
                 probability = intValue;
             }
@@ -73,9 +77,76 @@ namespace NormalDistribution
                 {
                     return;
                 }
-                CheckBounds(intValue, minPoints, maxPoints, 
+                UpdateUI(intValue, minPoints, maxPoints, 
                     TOTAL_POINTS_PROPERTY_AS_STRING, PointsError);                
                 totalPoints = intValue;
+            }
+        }
+
+        #endregion
+
+        #region image set
+
+        private BitmapSource chart;
+        public BitmapSource Chart
+        {
+            get => chart;
+            set
+            {
+                if (chart != value)
+                {
+                    chart = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public void SetImage(BitmapSource newValue)
+        {
+            newValue.Freeze();
+            Chart = newValue;
+        }
+
+        #endregion
+
+        #region calulations results
+
+        private double falseAlarmError;
+        public double FalseAlarmError
+        {
+            get => falseAlarmError;
+            set
+            {
+                if (value != falseAlarmError)
+                {
+                    falseAlarmError = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private double detectionSkipError;
+        public double DetectionSkipError
+        {
+            get => detectionSkipError;
+            set
+            {
+                if (value != detectionSkipError)
+                {
+                    detectionSkipError = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private double summaryError;
+        public double SummaryError
+        {
+            get => summaryError;
+            set
+            {
+                if (value != summaryError)
+                {
+                    summaryError = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -95,32 +166,23 @@ namespace NormalDistribution
                 return !errors.ContainsKey(propertyName) ? null : errors[propertyName];
             }
         }
-
-        public string Error
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
-
-        private bool haveFieldsError = false;
-        public bool HaveFieldsError
-        {
-            get => haveFieldsError;
-            private set
-            {
-                haveFieldsError = value;
-                //
-            }
-        }
+  
+        //private bool haveFieldsError = false;
+        //public bool HaveFieldsError
+        //{
+        //    get => haveFieldsError;
+        //    private set
+        //    {
+        //        haveFieldsError = value;
+        //        //
+        //    }
+        //}
 
         private Dictionary<string, string> errors = new Dictionary<string, string>();
 
         private void AddError(string propertyName, string error)
         {
             errors[propertyName] = error;
-            HaveFieldsError = true;
         }
 
         private void RemoveError(string propertyName)
@@ -128,11 +190,57 @@ namespace NormalDistribution
             if (errors.ContainsKey(propertyName))
             {
                 errors.Remove(propertyName);
-            }
-            if (errors.Count == 0)
+            }         
+        }
+
+        public string Error { get => string.Empty; }
+
+        /// <summary>
+        /// Detects whether passed number is possible
+        /// </summary>
+        /// <param name="target">Value to check</param>
+        /// <param name="lowerBound">Minimum value</param>
+        /// <param name="upperBound">Maximum value</param>
+        /// <returns>true if target value is in bounds, false otherwise</returns>
+        private bool UpdateUI(
+            int target,
+            int lowerBound,
+            int upperBound,
+            string propertyNameToChange,
+            string errorMessage)
+        {
+            var result = true;
+
+            if ((target >= lowerBound) && (target < upperBound))
             {
-                HaveFieldsError = false;
+                RemoveError(propertyNameToChange);
+                switch (propertyNameToChange)
+                {
+                    case PROBABILITY_PROPERTY_AS_STRING:
+                        CanProcess = true;
+                        break;
+                    case TOTAL_POINTS_PROPERTY_AS_STRING:
+                        CanGenerate = true;
+                        break;
+                }
             }
+            else
+            {
+                AddError(propertyNameToChange, errorMessage);
+                result = false;
+
+                switch (propertyNameToChange)
+                {
+                    case PROBABILITY_PROPERTY_AS_STRING:
+                        CanProcess = false;
+                        break;
+                    case TOTAL_POINTS_PROPERTY_AS_STRING:
+                        CanGenerate = false;
+                        break;
+                }            
+            }
+
+            return result;
         }
 
         #endregion
@@ -148,37 +256,51 @@ namespace NormalDistribution
 
         #endregion
 
-        /// <summary>
-        /// Detects whether passed number is possible
-        /// </summary>
-        /// <param name="target">Value to check</param>
-        /// <param name="lowerBound">Minimum value</param>
-        /// <param name="upperBound">Maximum value</param>
-        /// <returns>true if target value is in passed bounds, false otherwise</returns>
-        private bool CheckBounds(int target, int lowerBound, int upperBound,
-            string propertyNameToChange, string errorMessage)
-        {
-            if ((target >= lowerBound) && (target < upperBound))
-            {
-                RemoveError(propertyNameToChange);
-                return true;
+        // true after model initialization
+        private bool isInitialized = false;
+        public bool IsInitialized {
+            get => isInitialized;
+            set {
+                isInitialized = true;
+                CanProcess = true;
             }
+        }  
 
-            AddError(propertyNameToChange, errorMessage);
-            return false;
+        private bool canGenerate = true;
+        public bool CanGenerate
+        {
+            get => canGenerate;
+            set
+            {
+                if (canGenerate != value)
+                {
+                    if (value == true && errors.ContainsKey(TOTAL_POINTS_PROPERTY_AS_STRING))
+                    {
+                        return;
+                    } 
+                    canGenerate = value;
+                    OnPropertyChanged();                                                       
+                }                    
+            }
+        } 
+
+        private bool canProcess = false;
+        public bool CanProcess
+        {
+            get => canProcess;
+            set
+            {
+                if (canProcess != value)
+                {
+                    if (value == true && errors.ContainsKey(PROBABILITY_PROPERTY_AS_STRING))
+                    {
+                        return;
+                    }                                     
+                    canProcess = value && IsInitialized;
+                    OnPropertyChanged();
+                }
+            }
         }
-
-
-        //private bool enabled = true;
-        //public bool Enabled
-        //{
-        //    get => enabled;
-        //    set
-        //    {
-        //        enabled = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
     }
 }
 

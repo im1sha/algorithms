@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace NormalDistribution
@@ -15,43 +16,58 @@ namespace NormalDistribution
         private ApplicationModel model;
         public ApplicationModel Model
         {
-            get
-            {
-                return model;
-            }
+            get => model;            
             set
             {
-                model = value;
-                OnPropertyChanged();
+                if (value != model)
+                {
+                    model = value;
+                    OnPropertyChanged();
+                }              
             }
         }
 
-      
-
-
-        private InteractCommand executeCommand;
-        /// <summary>
-        /// Starts model execution
-        /// </summary>
-        public InteractCommand ExecuteCommand
+        private InteractCommand generateCommand;
+        public InteractCommand GenerateCommand
         {
             get
             {
-                return executeCommand ??
-                    (executeCommand = new InteractCommand(obj =>
+                return generateCommand ??
+                    (generateCommand = new InteractCommand(obj =>
                     {
-                        //Model = new ApplicationModel(int.Parse(InteractData.TotalPoints), 
-                        //    InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS);
-                        //Model.StartExecution();                       
+                        Model?.Dispose();
+
+                        Model = new ApplicationModel(InteractData);
+
+                        Model.StartInitialization();
                     }));
             }
         }
 
-       
+        private InteractCommand processCommand;
+        public InteractCommand ProcessCommand
+        {
+            get
+            {
+                return processCommand ??
+                    (processCommand = new InteractCommand(obj =>
+                    {
+                        if (Model != null && InteractData.IsInitialized)
+                        {
+                            Model.StartDataProcessing();
+                        }
+                    }));
+            }
+        }
+
+        #region INotifyPropertyChanged 
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string property = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-        }      
+        }
+
+        #endregion
     }
 }

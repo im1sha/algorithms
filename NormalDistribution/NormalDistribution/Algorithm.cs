@@ -151,12 +151,10 @@ namespace NormalDistribution
             (double point, double decisionRuleValue) result1 = (0, 0);
             (double point, double decisionRuleValue) result2 = (0, 0);
 
-            foreach (var item1 in values1)
-            {
-                foreach (var item2 in values2)
-                {
+            Parallel.ForEach(values1, item1 => {
+                Parallel.ForEach(values2, item2 => {
                     squareOfCurrentDistance = Math.Pow(item1.decisionRuleValue - item2.decisionRuleValue, 2)
-                        + Math.Pow(item1.point - item2.point, 2);
+                       + Math.Pow(item1.point - item2.point, 2);
 
                     if (squareOfCurrentDistance < minimalSquareOfDistance)
                     {
@@ -164,8 +162,8 @@ namespace NormalDistribution
                         result1 = item1;
                         result2 = item2;
                     }
-                }
-            }
+                });
+            });
 
             return ((result1.point + result2.point) / 2, (result1.decisionRuleValue + result2.decisionRuleValue) / 2);
         }
@@ -295,17 +293,16 @@ namespace NormalDistribution
                     data[1].mean, data[1].standardDeviation),
             };
 
-            // set decision rule values
-            for (int i = 0; i < data.Length; i++)
+            Parallel.For(0, data.Length, i =>
             {
-                for (int j = 0; j < data[i].values.Length; j++)
+                Parallel.For(0, data[i].values.Length, j =>
                 {
                     data[i].values[j].decisionRuleValue = decisionRuleValues[i][j];
-                }
-            }
-                
-            ValueOfMinimumErrorPoint = CalculateValueOfMinimumErrorPoint(data[0].values, data[1].values);
-            FalseAlarmError = CalculateFalseAlarmError(data[0].values, ValueOfMinimumErrorPoint);
+                });
+            });
+            
+            valueOfMinimumErrorPoint = CalculateValueOfMinimumErrorPoint(data[0].values, data[1].values);
+            FalseAlarmError = CalculateFalseAlarmError(data[0].values, valueOfMinimumErrorPoint);
             DetectionSkipError = CalculateDetectionSkipError(data[1].values, valueOfMinimumErrorPoint);
 
             IsCalculated = true;

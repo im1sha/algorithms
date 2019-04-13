@@ -6,6 +6,8 @@
         xmlns:local="clr-namespace:NormalDistribution"
         mc:Ignorable="d"
         Title="normal distribution" Height="600" MinHeight="600" Width="900" MinWidth="900">
+    
+    
     <Window.Resources>
         <ControlTemplate x:Key="validationFailed">
             <StackPanel Orientation="Horizontal">
@@ -46,8 +48,8 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" MouseDown="Grid_MouseDown">
-            <Canvas Margin="5" Name="paintSurface" Background="White"  />
+        <Grid Grid.Column="0" >
+            <Image Stretch="Fill" Margin="5" Source="{Binding InteractData.Chart, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
         <Grid Grid.Column="1">
@@ -73,18 +75,22 @@
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
-            </TextBox>
+            </TextBox>      
+            
+            
             <Button Grid.Row="2" 
-                    Command="{Binding ExecuteCommand}" 
-                    IsEnabled="{Binding Path=InteractData.Enabled, UpdateSourceTrigger=PropertyChanged}" 
-                    Content="generate distributions" >
+                    Command="{Binding GenerateCommand}" 
+                    Content="generate distributions" 
+                    IsEnabled="{Binding Path=InteractData.CanGenerate, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+
+                >
             </Button>
 
             <!--probability of A-->
-            <Label Grid.Row="3" Content="prior probability"  />
+            <Label Grid.Row="3" Content="prior probability, %"  />
             <TextBox Grid.Row="4" Validation.ErrorTemplate="{StaticResource validationFailed}">
                 <TextBox.Text>
-                    <Binding Path="InteractData.TotalPoints"
+                    <Binding Path="InteractData.Probability"
                              NotifyOnValidationError="True"
                              UpdateSourceTrigger="PropertyChanged" >
                         <Binding.ValidationRules>
@@ -93,9 +99,10 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-            <Button Grid.Row="5" Command="{Binding ApplyCommand}" 
-                    IsEnabled="{Binding Path=InteractData.CanApplyKmeans, UpdateSourceTrigger=PropertyChanged}" 
-                    Content="process data" >
+
+            <Button Grid.Row="5" Command="{Binding ProcessCommand}" 
+                    Content="process data"
+                    IsEnabled="{Binding Path=InteractData.CanProcess, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  >
             </Button>
                      
             <!--probabilities-->
@@ -105,20 +112,21 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Label Grid.Row="0" Grid.Column="0" Content="false alarm, %" />
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding Clusters}" />
-                <Label Grid.Row="1" Grid.Column="0" Content="detection skip, %" />
-                <Label Grid.Row="1" Grid.Column="1" Content="{Binding TimeInMs}" />
-                <Label Grid.Row="2" Grid.Column="0" Content="summary, %" />
-                <Label Grid.Row="2" Grid.Column="1" Content="{Binding State}" />
+                <Label Grid.Row="0" Grid.Column="0" Content="false alarm" />
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding InteractData.FalseAlarmError  }" />
+                <Label Grid.Row="1" Grid.Column="0" Content="detection skip" />
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding InteractData.DetectionSkipError}" />
+                <Label Grid.Row="2" Grid.Column="0" Content="summary" />
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding InteractData.SummaryError}" />
             </Grid>
 
         </Grid>
     </Grid>
 </Window>
+    
+    
