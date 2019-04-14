@@ -87,13 +87,13 @@ namespace NormalDistribution
 
             interactData.SetImage(
                 ImageGenerator.GetImageByData(
-                    GetIntArrayFromTwoArrays(values[0].Select(i => (int)i.point).ToArray(),  decisionRuleValues0),
-                    GetIntArrayFromTwoArrays(values[1].Select(i => (int)i.point).ToArray(),  decisionRuleValues1),
+                    MergeArrays(values[0].Select(i => (int)i.point).ToArray(),  decisionRuleValues0),
+                    MergeArrays(values[1].Select(i => (int)i.point).ToArray(),  decisionRuleValues1),
                     (int)valueOfMinimumErrorPoint.point,
                     InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS));
         }
 
-        private int[] GetIntArrayFromTwoArrays(int[] source1, int[] source2)
+        private int[] MergeArrays(int[] source1, int[] source2)
         {
             if (source1.Length != source2.Length)
             {

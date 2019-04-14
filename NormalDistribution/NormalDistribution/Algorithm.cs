@@ -81,8 +81,8 @@ namespace NormalDistribution
         {
             Random random = new Random();
 
-            float leftOfSecond = random.Next(0, MaxPointPosition / 2);
-            float rightOfFirst = random.Next(MaxPointPosition / 2, MaxPointPosition);
+            float leftOfSecond = random.Next(0, MaxPointPosition / 3);
+            float rightOfFirst = random.Next(MaxPointPosition * 2 / 3, MaxPointPosition);
 
             return (leftOfSecond, rightOfFirst);
         }
@@ -121,8 +121,8 @@ namespace NormalDistribution
         /// </summary>
         private float GetPosteriorProbability(float x, float mean, float standardDeviation)
         {
-            return (float)(Math.Exp(-0.5 * Math.Pow((x - mean) / standardDeviation, 2))
-                 / (standardDeviation * Math.Sqrt(2 * Math.PI)));
+            return (float)(Math.Exp(-0.5 * Math.Pow((x - mean) / standardDeviation, 2)) /
+                (standardDeviation * Math.Sqrt(2 * Math.PI)));
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace NormalDistribution
             float[][] decisionRuleValues = {
                 CalculateDecisionRuleValuesSequence(sequences[0], priorProbability,
                     data[0].mean, data[0].standardDeviation),
-                CalculateDecisionRuleValuesSequence(sequences[1], priorProbability,
+                CalculateDecisionRuleValuesSequence(sequences[1], 1 - priorProbability,
                     data[1].mean, data[1].standardDeviation),
             };
 
@@ -322,54 +322,8 @@ namespace NormalDistribution
             valueOfMinimumErrorPoint = CalculateValueOfMinimumErrorPoint(data[0].values, data[1].values);
             (falseAlarmError, detectionSkipError) = CalculateErrors(data[0].values, data[1].values, valueOfMinimumErrorPoint);
 
-            Log();
-
             IsCalculated = true;
-        }
-
-        private void Log()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"falsealarmerror: {falseAlarmError}");
-            sb.AppendLine($"detectionskiperror: {detectionSkipError}\n");
-            sb.AppendLine($"valueofminimumerrorpoint: POINT {valueOfMinimumErrorPoint.point} DECISIONRULEVALUE {valueOfMinimumErrorPoint.decisionRuleValue}\n");
-
-            sb.AppendLine($"data[0] MEAN {data[0].mean} data[0] STANDARDDEVIATION { data[0].standardDeviation}\n");
-
-            sb.AppendLine($"data[0] LEFT " +
-                $"POINT {data[0].values[0].point} " +
-                $"DECISIONRULEVALUE {data[0].values[0].decisionRuleValue} \n" +
-                $"data[0] RIGHT " +
-                $"POINT {data[0].values[data[0].values.Length - 1].point} " +
-                $"DECISIONRULEVALUE {data[0].values[data[0].values.Length - 1].decisionRuleValue}\n");
-
-            sb.AppendLine($"data[1] MEAN {data[1].mean} data[1] STANDARDDEVIATION { data[1].standardDeviation}\n");
-
-            sb.AppendLine($"data[1] LEFT " +
-              $"POINT {data[1].values[1].point} " +
-              $"DECISIONRULEVALUE {data[1].values[1].decisionRuleValue} \n" +
-              $"data[1] RIGHT " +
-              $"POINT {data[1].values[data[1].values.Length - 1].point} " +
-              $"DECISIONRULEVALUE {data[1].values[data[1].values.Length - 1].decisionRuleValue}\n");
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                sb.AppendLine($"\n\n DATA {i} ===============================================================\n\n");
-                for (int j = 0; j < data[i].values.Length; j++)
-                {
-                    sb.AppendLine($"POINT {data[i].values[j].point} DECISIONRULEVALUE {data[i].values[j].decisionRuleValue }");
-                }
-            }
-
-            //for (int i = 0; i < _loggedpoints.Count; i++)
-            //{
-            //    sb.AppendLine($"{_loggedpoints[i].Item1.Item1} : {_loggedpoints[i].Item1.Item2} | {_loggedpoints[i].Item2.Item1} : {_loggedpoints[i].Item2.Item2}");
-            //}
-
-            File.WriteAllText("log" + DateTime.Now.ToBinary().ToString() + ".txt", sb.ToString());
-        }
-
-        //List<((double, double),(double,double))> _loggedpoints;
+        }   
     }
 }
 
