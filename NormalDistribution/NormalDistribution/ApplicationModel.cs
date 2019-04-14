@@ -17,16 +17,9 @@ namespace NormalDistribution
     {
         private readonly InteractData interactData;
 
-        #region Algorithm data
-
         private Algorithm algorithm;
 
-        private (float point, float decisionRuleValue) valueOfMinimumErrorPoint;
-        public (float point, float decisionRuleValue)[][] values;
-
-        #endregion
-
-        #region Task cancellation
+        #region Tasks cancellation
 
         private CancellationTokenSource initializationTokenSource;
         private Task initializationTask;
@@ -81,11 +74,41 @@ namespace NormalDistribution
             interactData.DetectionSkipError = algorithm.DetectionSkipError;
             interactData.FalseAlarmError = algorithm.FalseAlarmError;
 
+            (float point, float decisionRuleValue) valueOfMinimumErrorPoint = algorithm.ValueOfMinimumErrorPoint;
+            (float point, float decisionRuleValue)[][] values = algorithm.Values;
 
-            values = algorithm.Values;
-            valueOfMinimumErrorPoint = algorithm.ValueOfMinimumErrorPoint;
+            //
+            float multiplierOfdecisionRuleValues = InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS /
+                Math.Max(values[0].Max(i => i.decisionRuleValue), values[1].Max(i => i.decisionRuleValue));
 
+            // flip uside down
+            var decisionRuleValues0 = values[0].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfdecisionRuleValues)).ToArray();
+            var decisionRuleValues1 = values[1].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfdecisionRuleValues)).ToArray();
 
+            interactData.SetImage(
+                ImageGenerator.GetImageByData(
+                    GetIntArrayFromTwoArrays(values[0].Select(i => (int)i.point).ToArray(),  decisionRuleValues0),
+                    GetIntArrayFromTwoArrays(values[1].Select(i => (int)i.point).ToArray(),  decisionRuleValues1),
+                    (int)valueOfMinimumErrorPoint.point,
+                    InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS));
+        }
+
+        private int[] GetIntArrayFromTwoArrays(int[] source1, int[] source2)
+        {
+            if (source1.Length != source2.Length)
+            {
+                throw new ArgumentException();
+            }
+
+            int[] result = new int[source1.Length * 2];
+
+            for (int i = 0; i < source1.Length; i ++)
+            {
+                result[i * 2] = source1[i];
+                result[i * 2 + 1] = source2[i];
+            }
+
+            return result;
         }
 
         #region IDisposable Support

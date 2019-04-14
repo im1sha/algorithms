@@ -11,7 +11,7 @@ namespace NormalDistribution
 {
     public class InteractData : IDataErrorInfo, INotifyPropertyChanged
     {
-        public const int DEFAULT_IMAGE_SIZE_IN_PIXELS = 10_000;
+        public const int DEFAULT_IMAGE_SIZE_IN_PIXELS = 1_000;
 
         #region probability (%)
 
