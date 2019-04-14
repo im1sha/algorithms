@@ -14,15 +14,15 @@ namespace NormalDistribution
         public bool IsCalculated { get; private set; } = false;
 
         public readonly int MaxPointPosition;
-        public readonly int TotalPoints;
+        private readonly int InitializationSetSize;
 
         /// <summary>
         /// decisionRuleValues is ( prior_probability * posterior_probability ), 
         /// mean - матожидание,  
         /// standardDeviation - среднее кв отклонение  
         /// </summary>
-        private ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[] data
-            = new ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[2];
+        private ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[] data = 
+            new ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[2];
 
         #region Calculactions results
 
@@ -72,7 +72,7 @@ namespace NormalDistribution
         public Algorithm(int totalPoints, int maxPointPosition)
         {
             MaxPointPosition = maxPointPosition;
-            TotalPoints = totalPoints;
+            InitializationSetSize = totalPoints;
         }
 
         #region Initialization
@@ -82,7 +82,7 @@ namespace NormalDistribution
             Random random = new Random();
 
             float leftOfSecond = random.Next(0, MaxPointPosition / 3);
-            float rightOfFirst = random.Next(MaxPointPosition * 2 / 3, MaxPointPosition);
+            float rightOfFirst = MaxPointPosition - random.Next(0, MaxPointPosition / 3); 
 
             return (leftOfSecond, rightOfFirst);
         }
@@ -175,88 +175,13 @@ namespace NormalDistribution
             (float point, float decisionRuleValue) valueOfMinimumErrorPoint
             )
         {
-            float falseAlarmErrorArea = CalculateFalseAlarmErrorArea(values1, valueOfMinimumErrorPoint);
-            float detectionSkipErrorArea = CalculateDetectionSkipErrorArea(values2, valueOfMinimumErrorPoint);
-            float chart1Area = GetArea(values1);
-            float chart2Area = GetArea(values2);
-            float fullArea = chart1Area + chart2Area - falseAlarmErrorArea - detectionSkipErrorArea;
+            float falseAlarmErrorArea = values1.Where(i => i.point < valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
+            float detectionSkipErrorArea = values2.Where(i => i.point > valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
 
-            return (falseAlarmErrorArea / fullArea, detectionSkipErrorArea / fullArea); // <?
-        }
+            // 1 is total probability (and area under the corresponding chart too)
+            float fullArea = 1 + 1 - falseAlarmErrorArea - detectionSkipErrorArea;
 
-        private float CalculateFalseAlarmErrorArea(
-           (float point, float decisionRuleValue)[] values,
-           (float point, float decisionRuleValue) valueOfMinimumErrorPoint)
-        {
-            int lastPos = 0;
-
-            for (int i = 1; i < values.Length; i++)
-            {
-                if (values[i].point > valueOfMinimumErrorPoint.point)
-                {
-                    lastPos = i - 1;
-                    break;
-                }
-            }
-
-            (float point, float decisionRuleValue)[] chart =
-                new (float point, float decisionRuleValue)[lastPos + 1 + 1];
-
-            Array.Copy(values, chart, lastPos + 1);
-            chart[lastPos + 1] = valueOfMinimumErrorPoint;
-
-            return GetArea(chart);
-        }
-
-        private float CalculateDetectionSkipErrorArea(
-            (float point, float decisionRuleValue)[] values,
-            (float point, float decisionRuleValue) valueOfMinimumErrorPoint)
-        {
-            int firstPos = 0;
-
-            for (int i = 1; i < values.Length; i++)
-            {
-                if (values[i].point > valueOfMinimumErrorPoint.point)
-                {
-                    firstPos = i;
-                    break;
-                }
-            }
-
-            (float point, float decisionRuleValue)[] chart =
-                new (float point, float decisionRuleValue)[values.Length - firstPos + 1];
-
-            Array.Copy(values, firstPos, chart, 1, chart.Length - 1);
-            chart[0] = valueOfMinimumErrorPoint;
-
-            return GetArea(chart);
-        }
-
-        /// <summary>
-        /// Calculates area under the chart   
-        /// </summary>
-        private float GetArea((float point, float decisionRuleValue)[] values)
-        {
-            if (values.Length <= 1)
-            {
-                throw new ApplicationException("Chart should contain 2 or more points");
-            }
-
-            float area = 0;
-
-            for (int i = 1; i < values.Length; i++)
-            {
-                area += GetTrapeziumArea(values[i].point - values[i - 1].point,
-                    values[i - 1].decisionRuleValue,
-                    values[i].decisionRuleValue);
-            }
-
-            return area;
-        }
-
-        private float GetTrapeziumArea(float baseLength, float height1, float height2)
-        {
-            return (height1 + height2) / 2 * baseLength;
+            return (falseAlarmErrorArea / fullArea, detectionSkipErrorArea / fullArea);
         }
 
         #endregion
@@ -265,22 +190,21 @@ namespace NormalDistribution
         {
             (float leftOfSecond, float rightOfFirst) = GetBounds();
 
-            float[][] sequences = {
-                GetSortedSequence(0, rightOfFirst, TotalPoints),
-                GetSortedSequence(leftOfSecond, (float)MaxPointPosition, TotalPoints)
+            float[][] initializationSequences = {
+                GetSortedSequence(0, rightOfFirst, InitializationSetSize),
+                GetSortedSequence(leftOfSecond, (float)MaxPointPosition, InitializationSetSize)
             };
 
             for (int i = 0; i < data.Length; i++)
             {
-                data[i].values = new (float, float)[TotalPoints];
+                data[i].mean = GetMean(initializationSequences[i]);
+                data[i].standardDeviation = GetStandardDeviation(initializationSequences[i], data[i].mean);
+                data[i].values = new (float, float)[MaxPointPosition];
 
-                for (int j = 0; j < sequences[i].Length; j++)
+                for (int j = 0; j < data[i].values.Length; j++)
                 {
-                    data[i].values[j].point = sequences[i][j];
-                }
-
-                data[i].mean = GetMean(sequences[i]);
-                data[i].standardDeviation = GetStandardDeviation(sequences[i], data[i].mean);
+                    data[i].values[j].point = j;
+                }             
             }
 
             IsInitialized = true;
