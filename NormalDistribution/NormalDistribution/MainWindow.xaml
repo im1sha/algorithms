@@ -81,9 +81,7 @@
             <Button Grid.Row="2" 
                     Command="{Binding GenerateCommand}" 
                     Content="generate distributions" 
-                    IsEnabled="{Binding Path=InteractData.CanGenerate, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-
-                >
+                    IsEnabled="{Binding Path=InteractData.CanGenerate, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
             </Button>
 
             <!--probability of A-->
@@ -111,6 +109,8 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -123,6 +123,8 @@
                 <Label Grid.Row="1" Grid.Column="1" Content="{Binding InteractData.DetectionSkipError}" />
                 <Label Grid.Row="2" Grid.Column="0" Content="summary" />
                 <Label Grid.Row="2" Grid.Column="1" Content="{Binding InteractData.SummaryError}" />
+                <Label Grid.Row="4" Grid.Column ="0" Content="Distribution A" Foreground="Blue"/>
+                <Label Grid.Row="4" Grid.Column ="1" Content="Distribution B" Foreground="Red"/>
             </Grid>
 
         </Grid>

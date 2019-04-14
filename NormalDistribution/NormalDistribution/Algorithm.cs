@@ -148,7 +148,7 @@ namespace NormalDistribution
             (float point, float decisionRuleValue)[] values1,
             (float point, float decisionRuleValue)[] values2)
         {
-            var result = (0f, 0f);
+            var result = (float.NaN, float.NaN);
 
             Parallel.For(1, values1.Length, (i) =>
             {
@@ -175,13 +175,28 @@ namespace NormalDistribution
             (float point, float decisionRuleValue) valueOfMinimumErrorPoint
             )
         {
-            float falseAlarmErrorArea = values1.Where(i => i.point < valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
-            float detectionSkipErrorArea = values2.Where(i => i.point > valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
+            if (float.IsNaN(valueOfMinimumErrorPoint.point) && float.IsNaN(valueOfMinimumErrorPoint.decisionRuleValue))
+            {
+                if (values1[0].decisionRuleValue > values2[0].decisionRuleValue)
+                {
+                    return (values2.Select(i => i.decisionRuleValue).Sum(), 0);
+                }
+                else
+                {
+                    return (0, values1.Select(i => i.decisionRuleValue).Sum());
+                }
+            }
+            else
+            {
+                float falseAlarmErrorArea = values2.Where(i => i.point < valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
+                float detectionSkipErrorArea = values1.Where(i => i.point > valueOfMinimumErrorPoint.point).Select(i => i.decisionRuleValue).Sum();
 
-            // 1 is total probability (and area under the corresponding chart too)
-            float fullArea = 1 + 1 - falseAlarmErrorArea - detectionSkipErrorArea;
+                float fullArea = values1.Select(i => i.decisionRuleValue).Sum() +
+                    values2.Select(i => i.decisionRuleValue).Sum() -
+                    falseAlarmErrorArea - detectionSkipErrorArea;
 
-            return (falseAlarmErrorArea / fullArea, detectionSkipErrorArea / fullArea);
+                return (falseAlarmErrorArea / fullArea, detectionSkipErrorArea / fullArea);
+            }
         }
 
         #endregion

@@ -78,12 +78,12 @@ namespace NormalDistribution
             (float point, float decisionRuleValue)[][] values = algorithm.Values;
 
             //
-            float multiplierOfdecisionRuleValues = InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS /
+            float multiplierOfDecisionRuleValues = InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS /
                 Math.Max(values[0].Max(i => i.decisionRuleValue), values[1].Max(i => i.decisionRuleValue));
 
             // flip uside down
-            var decisionRuleValues0 = values[0].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfdecisionRuleValues)).ToArray();
-            var decisionRuleValues1 = values[1].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfdecisionRuleValues)).ToArray();
+            var decisionRuleValues0 = values[0].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfDecisionRuleValues)).ToArray();
+            var decisionRuleValues1 = values[1].Select(i => (int)(InteractData.DEFAULT_IMAGE_SIZE_IN_PIXELS - i.decisionRuleValue * multiplierOfDecisionRuleValues)).ToArray();
 
             interactData.SetImage(
                 ImageGenerator.GetImageByData(
@@ -148,7 +148,7 @@ namespace NormalDistribution
         {
             try
             {
-                if (!task.IsCompleted)
+                if (task != null && !task.IsCompleted)
                 {
                     try
                     {
@@ -169,7 +169,7 @@ namespace NormalDistribution
             }
             finally
             {
-                tokenSource.Dispose();
+                tokenSource?.Dispose();
             }
         }
 
