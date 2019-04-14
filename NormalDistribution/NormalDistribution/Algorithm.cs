@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Threading;
 
 namespace NormalDistribution
 {
@@ -19,38 +21,38 @@ namespace NormalDistribution
         /// mean - матожидание,  
         /// standardDeviation - среднее кв отклонение  
         /// </summary>
-        private ((double point, double decisionRuleValue)[] values, double mean, double standardDeviation)[] data
-            = new ((double point, double decisionRuleValue)[] values, double mean, double standardDeviation)[2];
+        private ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[] data
+            = new ((float point, float decisionRuleValue)[] values, float mean, float standardDeviation)[2];
 
         #region Calculactions results
 
-        private double falseAlarmError; // вероятность ложной тревоги
-        public double FalseAlarmError {
+        private float falseAlarmError; // вероятность ложной тревоги
+        public float FalseAlarmError {
             get { ThrowIfNotCalculated(); return falseAlarmError; }
             private set { falseAlarmError = value; }
         }
 
-        private double detectionSkipError; // вероятность пропуска ошибки
-        public double DetectionSkipError {
+        private float detectionSkipError; // вероятность пропуска ошибки
+        public float DetectionSkipError {
             get { ThrowIfNotCalculated(); return detectionSkipError; }
             private set { detectionSkipError = value; }
         }
 
-        public double Error { get { ThrowIfNotCalculated(); return DetectionSkipError + FalseAlarmError; } }
+        public float Error { get { ThrowIfNotCalculated(); return DetectionSkipError + FalseAlarmError; } }
 
-        private (double point, double decisionRuleValue) valueOfMinimumErrorPoint; // intersection of decisionRuleValues[0] and decisionRuleValues[1]
-        public (double point, double decisionRuleValue) ValueOfMinimumErrorPoint {
+        private (float point, float decisionRuleValue) valueOfMinimumErrorPoint; // intersection of decisionRuleValues[0] and decisionRuleValues[1]
+        public (float point, float decisionRuleValue) ValueOfMinimumErrorPoint {
             get { ThrowIfNotCalculated(); return valueOfMinimumErrorPoint; }
             private set { valueOfMinimumErrorPoint = value; }
         }
 
-        public (double point, double decisionRuleValue)[][] Values
+        public (float point, float decisionRuleValue)[][] Values
         {
             get {
                 ThrowIfNotCalculated();
-                return new (double point, double decisionRuleValue)[][] {
-                   ((double point, double decisionRuleValue)[]) data[0].values.Clone(),
-                   ((double point, double decisionRuleValue)[]) data[1].values.Clone()
+                return new (float point, float decisionRuleValue)[][] {
+                   ((float point, float decisionRuleValue)[]) data[0].values.Clone(),
+                   ((float point, float decisionRuleValue)[]) data[1].values.Clone()
                 };
             }
         }
@@ -75,39 +77,39 @@ namespace NormalDistribution
 
         #region Initialization
 
-        private (double leftOfSecond, double rightOfFirst) GetBounds()
+        private (float leftOfSecond, float rightOfFirst) GetBounds()
         {
             Random random = new Random();
 
-            double leftOfSecond = random.Next(0, MaxPointPosition / 2);
-            double rightOfFirst = random.Next(MaxPointPosition / 2, MaxPointPosition);
+            float leftOfSecond = random.Next(0, MaxPointPosition / 2);
+            float rightOfFirst = random.Next(MaxPointPosition / 2, MaxPointPosition);
 
             return (leftOfSecond, rightOfFirst);
         }
 
-        private double[] GetSortedSequence(double leftBound, double rightBound, int totalPoints)
+        private float[] GetSortedSequence(float leftBound, float rightBound, int totalPoints)
         {
-            double interval = rightBound - leftBound;
+            float interval = rightBound - leftBound;
 
             Random r = new Random();
-            var result = new double[totalPoints];
+            var result = new float[totalPoints];
 
             for (int i = 0; i < result.Length; i++)
             {
-                result[i] = r.NextDouble() * interval + leftBound;
+                result[i] = (float)r.NextDouble() * interval + leftBound;
             }
             Array.Sort(result);
             return result;
         }
 
-        private double GetMean(double[] sequence)
+        private float GetMean(float[] sequence)
         {
             return sequence.Sum() / sequence.Length;
         }
 
-        private double GetStandardDeviation(double[] sequence, double mean)
+        private float GetStandardDeviation(float[] sequence, float mean)
         {
-            return Math.Sqrt(sequence.Select(x => Math.Pow(x - mean, 2)).Sum() / sequence.Length);
+            return (float) Math.Sqrt(sequence.Select(x => Math.Pow(x - mean, 2)).Sum() / sequence.Length);
         }
 
         #endregion
@@ -117,16 +119,16 @@ namespace NormalDistribution
         /// <summary>
         /// Calculates posterior probability for normal distribution
         /// </summary>
-        private double GetPosteriorProbability(double x, double mean, double standardDeviation)
+        private float GetPosteriorProbability(float x, float mean, float standardDeviation)
         {
-            return Math.Exp(-0.5 * Math.Pow((x - mean) / standardDeviation, 2))
-                 / (standardDeviation * Math.Sqrt(2 * Math.PI));
+            return (float)(Math.Exp(-0.5 * Math.Pow((x - mean) / standardDeviation, 2))
+                 / (standardDeviation * Math.Sqrt(2 * Math.PI)));
         }
 
         /// <summary>
         /// Values used to determine class which point belongs
         /// </summary>
-        private double GetDecisionRuleValue(double priorProbability, double posteriorProbability)
+        private float GetDecisionRuleValue(float priorProbability, float posteriorProbability)
         {
             return priorProbability * posteriorProbability;
         }
@@ -134,43 +136,57 @@ namespace NormalDistribution
         /// <summary>
         /// Calculate DecisionRuleValue for each item of the sequence
         /// </summary>
-        private double[] CalculateDecisionRuleValuesSequence(double[] sequence, double priorProbability,
-            double mean, double standardDeviation)
+        private float[] CalculateDecisionRuleValuesSequence(float[] sequence, float priorProbability,
+            float mean, float standardDeviation)
         {
             return sequence.Select(x => GetDecisionRuleValue(priorProbability, GetPosteriorProbability(x, mean, standardDeviation))).ToArray();
         }
+   
+        private readonly object sync = new object();
 
-        private (double point, double decisionRuleValue) CalculateValueOfMinimumErrorPoint(
-            (double point, double decisionRuleValue)[] values1,
-            (double point, double decisionRuleValue)[] values2)
+        private (float point, float decisionRuleValue) CalculateValueOfMinimumErrorPoint(
+            (float point, float decisionRuleValue)[] values1,
+            (float point, float decisionRuleValue)[] values2)
         {
-            double minimalSquareOfDistance = double.MaxValue;
-            double squareOfCurrentDistance;
+            var result = (0f, 0f);
 
-            // nearest ones
-            (double point, double decisionRuleValue) result1 = (0, 0);
-            (double point, double decisionRuleValue) result2 = (0, 0);
-
-            Parallel.ForEach(values1, item1 => {
-                Parallel.ForEach(values2, item2 => {
-                    squareOfCurrentDistance = Math.Pow(item1.decisionRuleValue - item2.decisionRuleValue, 2)
-                       + Math.Pow(item1.point - item2.point, 2);
-
-                    if (squareOfCurrentDistance < minimalSquareOfDistance)
+            Parallel.For(1, values1.Length, (i) =>
+            {
+                Parallel.For(1, values2.Length, (j) =>
+                {
+                    (float X, float Y) = Point.FindIntersection(values1[i-1], values1[i], values2[j-1], values2[j]);  
+                    
+                    if (!float.IsNaN(X) && !float.IsNaN(Y))
                     {
-                        minimalSquareOfDistance = squareOfCurrentDistance;
-                        result1 = item1;
-                        result2 = item2;
+                        lock (sync)
+                        {
+                            result = (X, Y);
+                        }
                     }
                 });
             });
 
-            return ((result1.point + result2.point) / 2, (result1.decisionRuleValue + result2.decisionRuleValue) / 2);
+            return result;
         }
 
-        private double CalculateFalseAlarmError(
-            (double point, double decisionRuleValue)[] values,
-            (double point, double decisionRuleValue) valueOfMinimumErrorPoint)
+        private (float falseAlarmError, float detectionSkipError) CalculateErrors(
+            (float point, float decisionRuleValue)[] values1,
+            (float point, float decisionRuleValue)[] values2,
+            (float point, float decisionRuleValue) valueOfMinimumErrorPoint
+            )
+        {
+            float falseAlarmErrorArea = CalculateFalseAlarmErrorArea(values1, valueOfMinimumErrorPoint);
+            float detectionSkipErrorArea = CalculateDetectionSkipErrorArea(values2, valueOfMinimumErrorPoint);
+            float chart1Area = GetArea(values1);
+            float chart2Area = GetArea(values2);
+            float fullArea = chart1Area + chart2Area - falseAlarmErrorArea - detectionSkipErrorArea;
+
+            return (falseAlarmErrorArea / fullArea, detectionSkipErrorArea / fullArea); // <?
+        }
+
+        private float CalculateFalseAlarmErrorArea(
+           (float point, float decisionRuleValue)[] values,
+           (float point, float decisionRuleValue) valueOfMinimumErrorPoint)
         {
             int lastPos = 0;
 
@@ -179,21 +195,22 @@ namespace NormalDistribution
                 if (values[i].point > valueOfMinimumErrorPoint.point)
                 {
                     lastPos = i - 1;
+                    break;
                 }
             }
 
-            (double point, double decisionRuleValue)[] chart = 
-                new (double point, double decisionRuleValue)[lastPos + 1];
+            (float point, float decisionRuleValue)[] chart =
+                new (float point, float decisionRuleValue)[lastPos + 1 + 1];
 
-            Array.Copy(values, chart, lastPos);
-            chart[lastPos] = valueOfMinimumErrorPoint;
+            Array.Copy(values, chart, lastPos + 1);
+            chart[lastPos + 1] = valueOfMinimumErrorPoint;
 
             return GetArea(chart);
         }
 
-        private double CalculateDetectionSkipError(
-            (double point, double decisionRuleValue)[] values,
-            (double point, double decisionRuleValue) valueOfMinimumErrorPoint)
+        private float CalculateDetectionSkipErrorArea(
+            (float point, float decisionRuleValue)[] values,
+            (float point, float decisionRuleValue) valueOfMinimumErrorPoint)
         {
             int firstPos = 0;
 
@@ -202,11 +219,12 @@ namespace NormalDistribution
                 if (values[i].point > valueOfMinimumErrorPoint.point)
                 {
                     firstPos = i;
+                    break;
                 }
             }
 
-            (double point, double decisionRuleValue)[] chart = 
-                new (double point, double decisionRuleValue)[values.Length - firstPos + 1];
+            (float point, float decisionRuleValue)[] chart =
+                new (float point, float decisionRuleValue)[values.Length - firstPos + 1];
 
             Array.Copy(values, firstPos, chart, 1, chart.Length - 1);
             chart[0] = valueOfMinimumErrorPoint;
@@ -217,18 +235,18 @@ namespace NormalDistribution
         /// <summary>
         /// Calculates area under the chart   
         /// </summary>
-        private double GetArea((double point, double decisionRuleValue)[] values)
+        private float GetArea((float point, float decisionRuleValue)[] values)
         {
             if (values.Length <= 1)
             {
                 throw new ApplicationException("Chart should contain 2 or more points");
             }
 
-            double area = 0;
+            float area = 0;
 
             for (int i = 1; i < values.Length; i++)
             {
-                area += GetTrapeziumArea(values[i].point - values[i - 1].point, 
+                area += GetTrapeziumArea(values[i].point - values[i - 1].point,
                     values[i - 1].decisionRuleValue,
                     values[i].decisionRuleValue);
             }
@@ -236,7 +254,7 @@ namespace NormalDistribution
             return area;
         }
 
-        private double GetTrapeziumArea(double baseLength, double height1, double height2)
+        private float GetTrapeziumArea(float baseLength, float height1, float height2)
         {
             return (height1 + height2) / 2 * baseLength;
         }
@@ -245,16 +263,16 @@ namespace NormalDistribution
 
         public void Initialize()
         {
-            (double leftOfSecond, double rightOfFirst) = GetBounds();
+            (float leftOfSecond, float rightOfFirst) = GetBounds();
 
-            double[][] sequences = {
+            float[][] sequences = {
                 GetSortedSequence(0, rightOfFirst, TotalPoints),
-                GetSortedSequence(leftOfSecond, (double)TotalPoints, TotalPoints)
+                GetSortedSequence(leftOfSecond, (float)MaxPointPosition, TotalPoints)
             };
 
             for (int i = 0; i < data.Length; i++)
             {
-                data[i].values = new (double, double)[TotalPoints];
+                data[i].values = new (float, float)[TotalPoints];
 
                 for (int j = 0; j < sequences[i].Length; j++)
                 {
@@ -274,19 +292,19 @@ namespace NormalDistribution
         /// DecisionRuleValues (data[0].decisionRuleValues & data[1].decisionRuleValues)       
         /// </summary>
         /// <param name="priorProbability">Prior probability that point belongs to first sequence</param>
-        public void CalculateData(double priorProbability)
+        public void CalculateData(float priorProbability)
         {
             if (!IsInitialized)
             {
                 throw new ApplicationException("Not initialzed");
             }
 
-            double[][] sequences = {
-                data[0].values.Select(i => i.decisionRuleValue).ToArray(),
-                data[1].values.Select(i => i.decisionRuleValue).ToArray()
+            float[][] sequences = {
+                data[0].values.Select(i => i.point).ToArray(),
+                data[1].values.Select(i => i.point).ToArray()
             };
 
-            double[][] decisionRuleValues = {
+            float[][] decisionRuleValues = {
                 CalculateDecisionRuleValuesSequence(sequences[0], priorProbability,
                     data[0].mean, data[0].standardDeviation),
                 CalculateDecisionRuleValuesSequence(sequences[1], priorProbability,
@@ -302,14 +320,58 @@ namespace NormalDistribution
             });
             
             valueOfMinimumErrorPoint = CalculateValueOfMinimumErrorPoint(data[0].values, data[1].values);
-            FalseAlarmError = CalculateFalseAlarmError(data[0].values, valueOfMinimumErrorPoint);
-            DetectionSkipError = CalculateDetectionSkipError(data[1].values, valueOfMinimumErrorPoint);
+            (falseAlarmError, detectionSkipError) = CalculateErrors(data[0].values, data[1].values, valueOfMinimumErrorPoint);
+
+            Log();
 
             IsCalculated = true;
         }
+
+        private void Log()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"falsealarmerror: {falseAlarmError}");
+            sb.AppendLine($"detectionskiperror: {detectionSkipError}\n");
+            sb.AppendLine($"valueofminimumerrorpoint: POINT {valueOfMinimumErrorPoint.point} DECISIONRULEVALUE {valueOfMinimumErrorPoint.decisionRuleValue}\n");
+
+            sb.AppendLine($"data[0] MEAN {data[0].mean} data[0] STANDARDDEVIATION { data[0].standardDeviation}\n");
+
+            sb.AppendLine($"data[0] LEFT " +
+                $"POINT {data[0].values[0].point} " +
+                $"DECISIONRULEVALUE {data[0].values[0].decisionRuleValue} \n" +
+                $"data[0] RIGHT " +
+                $"POINT {data[0].values[data[0].values.Length - 1].point} " +
+                $"DECISIONRULEVALUE {data[0].values[data[0].values.Length - 1].decisionRuleValue}\n");
+
+            sb.AppendLine($"data[1] MEAN {data[1].mean} data[1] STANDARDDEVIATION { data[1].standardDeviation}\n");
+
+            sb.AppendLine($"data[1] LEFT " +
+              $"POINT {data[1].values[1].point} " +
+              $"DECISIONRULEVALUE {data[1].values[1].decisionRuleValue} \n" +
+              $"data[1] RIGHT " +
+              $"POINT {data[1].values[data[1].values.Length - 1].point} " +
+              $"DECISIONRULEVALUE {data[1].values[data[1].values.Length - 1].decisionRuleValue}\n");
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                sb.AppendLine($"\n\n DATA {i} ===============================================================\n\n");
+                for (int j = 0; j < data[i].values.Length; j++)
+                {
+                    sb.AppendLine($"POINT {data[i].values[j].point} DECISIONRULEVALUE {data[i].values[j].decisionRuleValue }");
+                }
+            }
+
+            //for (int i = 0; i < _loggedpoints.Count; i++)
+            //{
+            //    sb.AppendLine($"{_loggedpoints[i].Item1.Item1} : {_loggedpoints[i].Item1.Item2} | {_loggedpoints[i].Item2.Item1} : {_loggedpoints[i].Item2.Item2}");
+            //}
+
+            File.WriteAllText("log" + DateTime.Now.ToBinary().ToString() + ".txt", sb.ToString());
+        }
+
+        //List<((double, double),(double,double))> _loggedpoints;
     }
 }
-
 
 
 

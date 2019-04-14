@@ -22,7 +22,7 @@ namespace NormalDistribution
         {
             get
             {
-                return $"probability should be in following bounds: [ {minProbability}, {maxProbability} ) ";
+                return $"probability should be in following bounds: [ {minProbability}, {maxProbability} ] ";
             }
         }
 
@@ -52,17 +52,17 @@ namespace NormalDistribution
         #region total points
 
         private const string TOTAL_POINTS_PROPERTY_AS_STRING = "TotalPoints";
-        private static readonly int minPoints = 10_000;
+        private static readonly int minPoints = 1_000;
         private static readonly int maxPoints = 100_000;
         private string PointsError
         {
             get
             {
-                return $"points number should be in following bounds: [ {minPoints}, {maxPoints} ) ";
+                return $"points number should be in following bounds: [ {minPoints}, {maxPoints} ] ";
             }
         }
 
-        private int totalPoints = minPoints;
+        private int totalPoints = 5_000;
         /// <summary>
         /// Points number used in the test
         /// </summary>
@@ -110,8 +110,8 @@ namespace NormalDistribution
 
         #region calulations results
 
-        private double falseAlarmError;
-        public double FalseAlarmError
+        private float falseAlarmError;
+        public float FalseAlarmError
         {
             get => falseAlarmError;
             set
@@ -123,8 +123,8 @@ namespace NormalDistribution
                 }
             }
         }
-        private double detectionSkipError;
-        public double DetectionSkipError
+        private float detectionSkipError;
+        public float DetectionSkipError
         {
             get => detectionSkipError;
             set
@@ -136,8 +136,8 @@ namespace NormalDistribution
                 }
             }
         }
-        private double summaryError;
-        public double SummaryError
+        private float summaryError;
+        public float SummaryError
         {
             get => summaryError;
             set
@@ -211,7 +211,7 @@ namespace NormalDistribution
         {
             var result = true;
 
-            if ((target >= lowerBound) && (target < upperBound))
+            if ((target >= lowerBound) && (target <= upperBound))
             {
                 RemoveError(propertyNameToChange);
                 switch (propertyNameToChange)

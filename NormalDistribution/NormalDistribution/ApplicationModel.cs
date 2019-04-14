@@ -21,8 +21,8 @@ namespace NormalDistribution
 
         private Algorithm algorithm;
 
-        private (double point, double decisionRuleValue) valueOfMinimumErrorPoint;
-        public (double point, double decisionRuleValue)[][] values;
+        private (float point, float decisionRuleValue) valueOfMinimumErrorPoint;
+        public (float point, float decisionRuleValue)[][] values;
 
         #endregion
 
@@ -68,12 +68,12 @@ namespace NormalDistribution
                 calculationTokenSource = new CancellationTokenSource();
 
                 calculationTask = Task.Run(() =>
-                    ProcessData(int.Parse(interactData.Probability) / 100.0D),
+                    ProcessData(int.Parse(interactData.Probability) / 100.0f),
                     calculationTokenSource.Token);
             };
         }
 
-        private void ProcessData(double probability)
+        private void ProcessData(float probability)
         {
             algorithm.CalculateData(probability);
 
